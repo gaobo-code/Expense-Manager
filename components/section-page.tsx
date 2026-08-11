@@ -1,15 +1,20 @@
-import type { LucideIcon } from "lucide-react";
+"use client";
+
+import { BarChart3, Bell, WalletCards } from "lucide-react";
 import { PageShell } from "@/components/page-shell";
+import { type MessageKey, useLanguage } from "@/components/language-provider";
+
+type Section = "accounts" | "analysis" | "alerts";
 
 export function SectionPage({
-  title,
-  description,
-  icon: Icon,
+  section,
 }: {
-  title: string;
-  description: string;
-  icon: LucideIcon;
+  section: Section;
 }) {
+  const { t } = useLanguage();
+  const descriptionKey = `${section}Description` as MessageKey;
+  const Icon = { accounts: WalletCards, analysis: BarChart3, alerts: Bell }[section];
+
   return (
     <PageShell>
       <section>
@@ -18,12 +23,12 @@ export function SectionPage({
             <Icon size={24} />
           </span>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
-            <p className="mt-1 text-slate-500">{description}</p>
+            <h1 className="text-3xl font-bold tracking-tight">{t(section)}</h1>
+            <p className="mt-1 text-slate-500">{t(descriptionKey)}</p>
           </div>
         </div>
         <div className="rounded-2xl border border-slate-200 bg-white p-8 text-sm text-slate-500 shadow-sm">
-          Your {title.toLowerCase()} content will appear here.
+          {t("emptySection", { section: t(section).toLowerCase() })}
         </div>
       </section>
     </PageShell>

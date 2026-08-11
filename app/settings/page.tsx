@@ -1,11 +1,4 @@
-import { Settings } from "lucide-react";
-import { SectionPage } from "@/components/section-page";
+import { SettingsView } from "@/components/settings-view";
 export default function SettingsPage() {
-  return (
-    <SectionPage
-      title="Settings"
-      description="Customize your expense manager."
-      icon={Settings}
-    />
-  );
+  return <SettingsView />;
 }

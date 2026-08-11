@@ -12,13 +12,14 @@ import {
   WalletCards,
   X,
 } from "lucide-react";
+import { type MessageKey, useLanguage } from "@/components/language-provider";
 
 const items = [
-  { label: "Transactions", href: "/", icon: ReceiptText },
-  { label: "Accounts", href: "/accounts", icon: WalletCards },
-  { label: "Analysis", href: "/analysis", icon: BarChart3 },
-  { label: "Alerts", href: "/alerts", icon: Bell },
-  { label: "Settings", href: "/settings", icon: Settings },
+  { label: "transactions" as MessageKey, href: "/", icon: ReceiptText },
+  { label: "accounts" as MessageKey, href: "/accounts", icon: WalletCards },
+  { label: "analysis" as MessageKey, href: "/analysis", icon: BarChart3 },
+  { label: "alerts" as MessageKey, href: "/alerts", icon: Bell },
+  { label: "settings" as MessageKey, href: "/settings", icon: Settings },
 ];
 
 function isActive(pathname: string, href: string) {
@@ -28,6 +29,7 @@ function isActive(pathname: string, href: string) {
 export function AppNavigation() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const { t } = useLanguage();
 
   return (
     <>
@@ -37,7 +39,7 @@ export function AppNavigation() {
             <span className="grid size-9 place-items-center rounded-xl bg-emerald-600 text-white">
               <WalletCards size={19} />
             </span>
-            Expense Manager
+            {t("appName")}
           </Link>
 
           <nav aria-label="Main navigation" className="hidden items-center gap-1 md:flex">
@@ -54,7 +56,7 @@ export function AppNavigation() {
                   href={item.href}
                   key={item.href}
                 >
-                  {item.label}
+                  {t(item.label)}
                 </Link>
               );
             })}
@@ -82,7 +84,7 @@ export function AppNavigation() {
           />
           <aside className="absolute right-0 top-0 flex h-full w-[82%] max-w-xs flex-col bg-white p-5 shadow-2xl">
             <div className="mb-8 flex items-center justify-between">
-              <span className="text-lg font-bold text-slate-950">Menu</span>
+              <span className="text-lg font-bold text-slate-950">{t("menu")}</span>
               <button
                 aria-label="Close navigation menu"
                 className="grid size-10 place-items-center rounded-lg text-slate-600 hover:bg-slate-100"
@@ -109,7 +111,7 @@ export function AppNavigation() {
                     onClick={() => setOpen(false)}
                   >
                     <Icon size={20} />
-                    {item.label}
+                    {t(item.label)}
                   </Link>
                 );
               })}
