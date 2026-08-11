@@ -1,12 +1,33 @@
-const transactions = [
-  { date: "Aug 11, 2026", amount: "$128.40", category: "Groceries" },
-  { date: "Aug 9, 2026", amount: "$42.00", category: "Transportation" },
-  { date: "Aug 7, 2026", amount: "$89.99", category: "Shopping" },
-  { date: "Aug 5, 2026", amount: "$24.50", category: "Dining" },
-  { date: "Aug 2, 2026", amount: "$1,250.00", category: "Housing" },
-];
+import { createClient } from "@/lib/supabase/server";
 
-export default function Home() {
+export const instant = false;
+
+type Transaction = {
+  id: number;
+  transaction_date: string;
+  amount: number;
+  category: string;
+};
+
+const dateFormatter = new Intl.DateTimeFormat("en-US", {
+  dateStyle: "medium",
+  timeZone: "UTC",
+});
+
+const amountFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+});
+
+export default async function Home() {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("transactions")
+    .select("id, transaction_date, amount, category")
+    .order("transaction_date", { ascending: false });
+
+  const transactions = (data ?? []) as Transaction[];
+
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-12 text-slate-950 sm:px-6 lg:px-8">
       <section className="mx-auto max-w-4xl">
@@ -23,6 +44,12 @@ export default function Home() {
         </div>
 
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          {error ? (
+            <div className="border-b border-amber-200 bg-amber-50 px-6 py-4 text-sm text-amber-800">
+              Transactions are temporarily unavailable. Apply the Supabase
+              migration to create the transactions table.
+            </div>
+          ) : null}
           <div className="overflow-x-auto">
             <table className="w-full min-w-[560px] border-collapse text-left">
               <thead className="bg-slate-100 text-xs uppercase tracking-wider text-slate-500">
@@ -42,13 +69,15 @@ export default function Home() {
                 {transactions.map((transaction) => (
                   <tr
                     className="transition-colors hover:bg-slate-50"
-                    key={`${transaction.date}-${transaction.category}`}
+                    key={transaction.id}
                   >
                     <td className="whitespace-nowrap px-6 py-5 text-sm font-medium text-slate-700">
-                      {transaction.date}
+                      {dateFormatter.format(
+                        new Date(`${transaction.transaction_date}T00:00:00Z`),
+                      )}
                     </td>
                     <td className="whitespace-nowrap px-6 py-5 text-right text-sm font-semibold tabular-nums text-slate-950">
-                      {transaction.amount}
+                      {amountFormatter.format(transaction.amount)}
                     </td>
                     <td className="px-6 py-5 text-sm text-slate-600">
                       <span className="inline-flex rounded-full bg-emerald-50 px-3 py-1 font-medium text-emerald-700">
