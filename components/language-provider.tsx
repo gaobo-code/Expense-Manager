@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
 export type Language = "en" | "zh";
+export type DateFormat = "DD/MM/YYYY" | "DD/MM/YY" | "DD/MM" | "MM/DD/YYYY" | "MM/DD/YY" | "MM/DD" | "YYYY/MM/DD" | "YY/MM/DD";
 
 const messages = {
   en: {
@@ -27,6 +28,8 @@ const messages = {
     languageDescription: "Choose the language used throughout the app.",
     english: "English",
     chinese: "中文",
+    dateFormat: "Date format",
+    dateFormatDescription: "Choose how dates are displayed throughout the app.",
   },
   zh: {
     appName: "支出管理",
@@ -50,6 +53,8 @@ const messages = {
     languageDescription: "选择整个应用使用的语言。",
     english: "English",
     chinese: "中文",
+    dateFormat: "日期格式",
+    dateFormatDescription: "选择整个应用中日期的显示格式。",
   },
 } as const;
 
@@ -58,6 +63,9 @@ export type MessageKey = keyof (typeof messages)["en"];
 type LanguageContextValue = {
   language: Language;
   setLanguage: (language: Language) => void;
+  dateFormat: DateFormat;
+  setDateFormat: (format: DateFormat) => void;
+  formatDate: (date: string | Date) => string;
   t: (key: MessageKey, values?: Record<string, string>) => string;
 };
 
@@ -65,16 +73,42 @@ const LanguageContext = createContext<LanguageContextValue | null>(null);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguageState] = useState<Language>("en");
+  const [dateFormat, setDateFormatState] = useState<DateFormat>("MM/DD/YYYY");
 
   useEffect(() => {
     const saved = window.localStorage.getItem("expense-language");
     if (saved === "en" || saved === "zh") setLanguageState(saved);
+    const savedDateFormat = window.localStorage.getItem("expense-date-format") as DateFormat | null;
+    if (["DD/MM/YYYY", "DD/MM/YY", "DD/MM", "MM/DD/YYYY", "MM/DD/YY", "MM/DD", "YYYY/MM/DD", "YY/MM/DD"].includes(savedDateFormat ?? "")) setDateFormatState(savedDateFormat!);
   }, []);
 
   const setLanguage = (nextLanguage: Language) => {
     setLanguageState(nextLanguage);
     window.localStorage.setItem("expense-language", nextLanguage);
     document.documentElement.lang = nextLanguage === "zh" ? "zh-CN" : "en";
+  };
+
+  const setDateFormat = (format: DateFormat) => {
+    setDateFormatState(format);
+    window.localStorage.setItem("expense-date-format", format);
+  };
+
+  const formatDate = (value: string | Date) => {
+    const date = typeof value === "string" ? new Date(value) : value;
+    const day = String(date.getUTCDate()).padStart(2, "0");
+    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+    const year = String(date.getUTCFullYear());
+    const parts: Record<DateFormat, string> = {
+      "DD/MM/YYYY": `${day}/${month}/${year}`,
+      "DD/MM/YY": `${day}/${month}/${year.slice(-2)}`,
+      "DD/MM": `${day}/${month}`,
+      "MM/DD/YYYY": `${month}/${day}/${year}`,
+      "MM/DD/YY": `${month}/${day}/${year.slice(-2)}`,
+      "MM/DD": `${month}/${day}`,
+      "YYYY/MM/DD": `${year}/${month}/${day}`,
+      "YY/MM/DD": `${year.slice(-2)}/${month}/${day}`,
+    };
+    return parts[dateFormat];
   };
 
   const t = (key: MessageKey, values?: Record<string, string>) => {
@@ -85,7 +119,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     return text;
   };
 
-  return <LanguageContext.Provider value={{ language, setLanguage, t }}>{children}</LanguageContext.Provider>;
+  return <LanguageContext.Provider value={{ language, setLanguage, dateFormat, setDateFormat, formatDate, t }}>{children}</LanguageContext.Provider>;
 }
 
 export function useLanguage() {
