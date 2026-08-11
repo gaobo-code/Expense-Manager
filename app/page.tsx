@@ -1,5 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
-import { TransactionsView, type Transaction } from "@/components/transactions-view";
+import {
+  TransactionsView,
+  type Transaction,
+} from "@/components/transactions-view";
 
 export const instant = false;
 
@@ -12,5 +15,7 @@ export default async function Home() {
 
   const transactions = (data ?? []) as Transaction[];
 
-  return <TransactionsView transactions={transactions} hasError={Boolean(error)} />;
+  return (
+    <TransactionsView transactions={transactions} hasError={Boolean(error)} />
+  );
 }

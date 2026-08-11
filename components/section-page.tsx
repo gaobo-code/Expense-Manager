@@ -18,7 +18,7 @@ export function SectionPage({
   return (
     <PageShell>
       <section>
-        <div className="mb-8 flex items-center gap-4">
+        <div className="mb-8 hidden items-center gap-4 md:flex">
           <span className="grid size-12 place-items-center rounded-2xl bg-emerald-100 text-emerald-700">
             <Icon size={24} />
           </span>

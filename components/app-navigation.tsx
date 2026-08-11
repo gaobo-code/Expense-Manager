@@ -30,6 +30,7 @@ export function AppNavigation() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const { t } = useLanguage();
+  const currentLabel = items.find((item) => isActive(pathname, item.href))?.label ?? "transactions";
 
   return (
     <>
@@ -39,7 +40,8 @@ export function AppNavigation() {
             <span className="grid size-9 place-items-center rounded-xl bg-emerald-600 text-white">
               <WalletCards size={19} />
             </span>
-            {t("appName")}
+            <span className="hidden md:inline">{t("appName")}</span>
+            <span className="md:hidden">{t(currentLabel)}</span>
           </Link>
 
           <nav aria-label="Main navigation" className="hidden items-center gap-1 md:flex">
