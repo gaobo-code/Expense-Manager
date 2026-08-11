@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { PageShell } from "@/components/page-shell";
 
 export const instant = false;
 
@@ -29,8 +30,8 @@ export default async function Home() {
   const transactions = (data ?? []) as Transaction[];
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-12 text-slate-950 sm:px-6 lg:px-8">
-      <section className="mx-auto max-w-4xl">
+    <PageShell>
+      <section>
         <div className="mb-8">
           <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-emerald-600">
             Expense Manager
@@ -91,6 +92,6 @@ export default async function Home() {
           </div>
         </div>
       </section>
-    </main>
+    </PageShell>
   );
 }
