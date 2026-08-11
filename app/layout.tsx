@@ -9,8 +9,15 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Next.js and Supabase Starter Kit",
-  description: "The fastest way to build apps with Next.js and Supabase",
+  title: "Expense Manager",
+  description: "Track and organize your everyday expenses.",
+  applicationName: "Expense Manager",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Expense Manager",
+  },
 };
 
 const geistSans = Geist({

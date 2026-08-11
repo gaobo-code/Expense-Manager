@@ -1,58 +1,67 @@
-import { DeployButton } from "@/components/deploy-button";
-import { EnvVarWarning } from "@/components/env-var-warning";
-import { AuthButton } from "@/components/auth-button";
-import { Hero } from "@/components/hero";
-import { ThemeSwitcher } from "@/components/theme-switcher";
-import { ConnectSupabaseSteps } from "@/components/tutorial/connect-supabase-steps";
-import { SignUpUserSteps } from "@/components/tutorial/sign-up-user-steps";
-import { hasEnvVars } from "@/lib/utils";
-import Link from "next/link";
-import { Suspense } from "react";
+const transactions = [
+  { date: "Aug 11, 2026", amount: "$128.40", category: "Groceries" },
+  { date: "Aug 9, 2026", amount: "$42.00", category: "Transportation" },
+  { date: "Aug 7, 2026", amount: "$89.99", category: "Shopping" },
+  { date: "Aug 5, 2026", amount: "$24.50", category: "Dining" },
+  { date: "Aug 2, 2026", amount: "$1,250.00", category: "Housing" },
+];
 
 export default function Home() {
   return (
-    <main className="min-h-screen flex flex-col items-center">
-      <div className="flex-1 w-full flex flex-col gap-20 items-center">
-        <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
-          <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5 text-sm">
-            <div className="flex gap-5 items-center font-semibold">
-              <Link href={"/"}>Next.js Supabase Starter</Link>
-              <div className="flex items-center gap-2">
-                <DeployButton />
-              </div>
-            </div>
-            {!hasEnvVars ? (
-              <EnvVarWarning />
-            ) : (
-              <Suspense>
-                <AuthButton />
-              </Suspense>
-            )}
-          </div>
-        </nav>
-        <div className="flex-1 flex flex-col gap-20 max-w-5xl p-5">
-          <Hero />
-          <main className="flex-1 flex flex-col gap-6 px-4">
-            <h2 className="font-medium text-xl mb-4">Next steps</h2>
-            {hasEnvVars ? <SignUpUserSteps /> : <ConnectSupabaseSteps />}
-          </main>
+    <main className="min-h-screen bg-slate-50 px-4 py-12 text-slate-950 sm:px-6 lg:px-8">
+      <section className="mx-auto max-w-4xl">
+        <div className="mb-8">
+          <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-emerald-600">
+            Expense Manager
+          </p>
+          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+            Transactions
+          </h1>
+          <p className="mt-2 text-slate-500">
+            A summary of your recent expenses.
+          </p>
         </div>
 
-        <footer className="w-full flex items-center justify-center border-t mx-auto text-center text-xs gap-8 py-16">
-          <p>
-            Powered by{" "}
-            <a
-              href="https://supabase.com/?utm_source=create-next-app&utm_medium=template&utm_term=nextjs"
-              target="_blank"
-              className="font-bold hover:underline"
-              rel="noreferrer"
-            >
-              Supabase
-            </a>
-          </p>
-          <ThemeSwitcher />
-        </footer>
-      </div>
+        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[560px] border-collapse text-left">
+              <thead className="bg-slate-100 text-xs uppercase tracking-wider text-slate-500">
+                <tr>
+                  <th className="px-6 py-4 font-semibold" scope="col">
+                    Date
+                  </th>
+                  <th className="px-6 py-4 text-right font-semibold" scope="col">
+                    Amount
+                  </th>
+                  <th className="px-6 py-4 font-semibold" scope="col">
+                    Category
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {transactions.map((transaction) => (
+                  <tr
+                    className="transition-colors hover:bg-slate-50"
+                    key={`${transaction.date}-${transaction.category}`}
+                  >
+                    <td className="whitespace-nowrap px-6 py-5 text-sm font-medium text-slate-700">
+                      {transaction.date}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-5 text-right text-sm font-semibold tabular-nums text-slate-950">
+                      {transaction.amount}
+                    </td>
+                    <td className="px-6 py-5 text-sm text-slate-600">
+                      <span className="inline-flex rounded-full bg-emerald-50 px-3 py-1 font-medium text-emerald-700">
+                        {transaction.category}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }
