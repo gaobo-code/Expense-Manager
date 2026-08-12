@@ -10,14 +10,14 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Expense Manager",
+  title: "Money Manager",
   description: "Track and organize your everyday expenses.",
-  applicationName: "Expense Manager",
+  applicationName: "Money Manager",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Expense Manager",
+    title: "Money Manager",
   },
 };
 

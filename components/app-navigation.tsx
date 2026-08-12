@@ -13,6 +13,8 @@ import {
   X,
 } from "lucide-react";
 import { type MessageKey, useLanguage } from "@/components/language-provider";
+import { LogoutButton } from "@/components/logout-button";
+import { AccountMenu } from "@/components/account-menu";
 
 const items = [
   { label: "transactions" as MessageKey, href: "/", icon: ReceiptText },
@@ -44,7 +46,7 @@ export function AppNavigation() {
             <span className="md:hidden">{t(currentLabel)}</span>
           </Link>
 
-          <nav aria-label="Main navigation" className="hidden items-center gap-1 md:flex">
+          <nav aria-label="Main navigation" className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1 md:flex">
             {items.map((item) => {
               const active = isActive(pathname, item.href);
               return (
@@ -63,6 +65,7 @@ export function AppNavigation() {
               );
             })}
           </nav>
+          <div className="hidden md:block"><AccountMenu /></div>
 
           <button
             aria-expanded={open}
@@ -118,6 +121,9 @@ export function AppNavigation() {
                 );
               })}
             </nav>
+            <div className="mt-auto border-t border-slate-200 pt-4">
+              <LogoutButton className="h-11 w-full justify-start rounded-xl bg-slate-50 px-4 text-base font-medium text-slate-600 hover:bg-red-50 hover:text-red-700" />
+            </div>
           </aside>
         </div>
       ) : null}

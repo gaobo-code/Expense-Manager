@@ -12,8 +12,9 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useLanguage } from "@/components/language-provider";
+import { ArrowRight, LockKeyhole, Mail } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export function LoginForm({
@@ -24,8 +25,36 @@ export function LoginForm({
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
-
+  const { language } = useLanguage();
+  const text = language === "zh" ? {
+    eyebrow: "欢迎回来",
+    title: "登录你的账户",
+    description: "继续记录支出，掌握你的财务节奏。",
+    email: "邮箱",
+    emailPlaceholder: "请输入邮箱地址",
+    password: "密码",
+    passwordPlaceholder: "请输入密码",
+    forgot: "忘记密码？",
+    loading: "正在登录…",
+    submit: "登录",
+    noAccount: "还没有账户？",
+    signUp: "免费注册",
+    fallbackError: "登录时出现错误，请稍后重试",
+  } : {
+    eyebrow: "Welcome back",
+    title: "Sign in to your account",
+    description: "Continue tracking income and expenses, and stay in control of your money.",
+    email: "Email",
+    emailPlaceholder: "Enter your email address",
+    password: "Password",
+    passwordPlaceholder: "Enter your password",
+    forgot: "Forgot password?",
+    loading: "Signing in…",
+    submit: "Sign in",
+    noAccount: "New to Money Manager?",
+    signUp: "Create an account",
+    fallbackError: "Something went wrong. Please try again.",
+  };
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     const supabase = createClient();
@@ -38,10 +67,20 @@ export function LoginForm({
         password,
       });
       if (error) throw error;
-      // Update this route to redirect to an authenticated route. The user already has an active session.
-      router.push("/protected");
+
+      const requestedPath = new URLSearchParams(window.location.search).get(
+        "next",
+      );
+      const destination =
+        requestedPath?.startsWith("/") && !requestedPath.startsWith("//")
+          ? requestedPath
+          : "/";
+
+      // Use a full navigation so the freshly written Supabase auth cookies are
+      // included before Proxy checks the destination request.
+      window.location.assign(destination);
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An error occurred");
+      setError(error instanceof Error ? error.message : text.fallbackError);
     } finally {
       setIsLoading(false);
     }
@@ -49,57 +88,43 @@ export function LoginForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl">Login</CardTitle>
-          <CardDescription>
-            Enter your email below to login to your account
-          </CardDescription>
+      <Card className="rounded-3xl border-slate-200/80 bg-white/90 shadow-2xl shadow-slate-900/10 backdrop-blur dark:border-slate-800 dark:bg-slate-900/90">
+        <CardHeader className="space-y-3 px-6 pb-6 pt-7 sm:px-8 sm:pt-8">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-600 dark:text-emerald-400">{text.eyebrow}</p>
+          <CardTitle className="text-3xl tracking-tight">{text.title}</CardTitle>
+          <CardDescription className="leading-6">{text.description}</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-6 pb-7 sm:px-8 sm:pb-8">
           <form onSubmit={handleLogin}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="m@example.com"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
+                <Label htmlFor="email">{text.email}</Label>
+                <div className="relative"><Mail className="absolute left-3 top-3 text-slate-400" size={18} /><Input className="h-11 rounded-xl bg-slate-50 pl-10 dark:bg-slate-950/60" id="email" type="email" placeholder={text.emailPlaceholder} required value={email} onChange={(e) => setEmail(e.target.value)} /></div>
               </div>
               <div className="grid gap-2">
                 <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password">{text.password}</Label>
                   <Link
                     href="/auth/forgot-password"
                     className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
                   >
-                    Forgot your password?
+                    {text.forgot}
                   </Link>
                 </div>
-                <Input
-                  id="password"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
+                <div className="relative"><LockKeyhole className="absolute left-3 top-3 text-slate-400" size={18} /><Input className="h-11 rounded-xl bg-slate-50 pl-10 dark:bg-slate-950/60" id="password" type="password" placeholder={text.passwordPlaceholder} required value={password} onChange={(e) => setPassword(e.target.value)} /></div>
               </div>
               {error && <p className="text-sm text-red-500">{error}</p>}
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Logging in..." : "Login"}
+              <Button type="submit" className="h-11 w-full rounded-xl bg-emerald-600 text-white shadow-lg shadow-emerald-600/20 hover:bg-emerald-700" disabled={isLoading}>
+                {isLoading ? text.loading : <>{text.submit}<ArrowRight /></>}
               </Button>
             </div>
             <div className="mt-4 text-center text-sm">
-              Don&apos;t have an account?{" "}
+              {text.noAccount}{" "}
               <Link
                 href="/auth/sign-up"
                 className="underline underline-offset-4"
               >
-                Sign up
+                {text.signUp}
               </Link>
             </div>
           </form>
