@@ -95,11 +95,11 @@ export function LoginForm({
           <CardDescription className="leading-6">{text.description}</CardDescription>
         </CardHeader>
         <CardContent className="px-6 pb-7 sm:px-8 sm:pb-8">
-          <form onSubmit={handleLogin}>
+          <form autoComplete="off" onSubmit={handleLogin}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
                 <Label htmlFor="email">{text.email}</Label>
-                <div className="relative"><Mail className="absolute left-3 top-3 text-slate-400" size={18} /><Input className="h-11 rounded-xl bg-slate-50 pl-10 dark:bg-slate-950/60" id="email" type="email" placeholder={text.emailPlaceholder} required value={email} onChange={(e) => setEmail(e.target.value)} /></div>
+                <div className="relative"><Mail className="absolute left-3 top-3 text-slate-400" size={18} /><Input autoComplete="off" className="h-11 rounded-xl bg-slate-50 pl-10 dark:bg-slate-950/60" id="email" name="login-email" type="email" placeholder={text.emailPlaceholder} required value={email} onChange={(e) => setEmail(e.target.value)} /></div>
               </div>
               <div className="grid gap-2">
                 <div className="flex items-center">
@@ -111,7 +111,7 @@ export function LoginForm({
                     {text.forgot}
                   </Link>
                 </div>
-                <div className="relative"><LockKeyhole className="absolute left-3 top-3 text-slate-400" size={18} /><Input className="h-11 rounded-xl bg-slate-50 pl-10 dark:bg-slate-950/60" id="password" type="password" placeholder={text.passwordPlaceholder} required value={password} onChange={(e) => setPassword(e.target.value)} /></div>
+                <div className="relative"><LockKeyhole className="absolute left-3 top-3 text-slate-400" size={18} /><Input autoComplete="new-password" className="h-11 rounded-xl bg-slate-50 pl-10 dark:bg-slate-950/60" id="password" name="login-password" type="password" placeholder={text.passwordPlaceholder} required value={password} onChange={(e) => setPassword(e.target.value)} /></div>
               </div>
               {error && <p className="text-sm text-red-500">{error}</p>}
               <Button type="submit" className="h-11 w-full rounded-xl bg-emerald-600 text-white shadow-lg shadow-emerald-600/20 hover:bg-emerald-700" disabled={isLoading}>

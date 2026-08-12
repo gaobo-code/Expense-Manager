@@ -1,6 +1,5 @@
 "use client";
 
-import { ThemeSwitcher } from "@/components/theme-switcher";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/components/language-provider";
 import { BarChart3, CheckCircle2, Globe2, ReceiptText, ShieldCheck, WalletCards } from "lucide-react";
@@ -50,7 +49,6 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
             <Globe2 size={15} />
             {language === "en" ? "中文" : "EN"}
           </Button>
-          <ThemeSwitcher />
         </div>
       </header>
 
@@ -76,7 +74,9 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
             </div>
             <p className="mt-5 text-sm text-slate-500 dark:text-slate-400">{text.spent}</p>
             <div className="mt-1 flex items-end justify-between">
-              <span className="text-3xl font-bold tracking-tight">¥ 3,842.50</span>
+              <span className="text-3xl font-bold tracking-tight">
+                {language === "zh" ? "¥ 3,842.50" : "$ 3,842.50"}
+              </span>
               <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">{text.trend}</span>
             </div>
             <div className="mt-6 flex h-16 items-end gap-2" aria-hidden="true">

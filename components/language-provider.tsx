@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useState } from "react";
+import { saveDateFormat, saveLanguage } from "@/app/settings/actions";
 
 export type Language = "en" | "zh";
 export type DateFormat = "DD/MM/YYYY" | "DD/MM/YY" | "DD/MM" | "MM/DD/YYYY" | "MM/DD/YY" | "MM/DD" | "YYYY/MM/DD" | "YY/MM/DD";
@@ -79,26 +80,32 @@ type LanguageContextValue = {
 
 const LanguageContext = createContext<LanguageContextValue | null>(null);
 
-export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguageState] = useState<Language>("en");
-  const [dateFormat, setDateFormatState] = useState<DateFormat>("MM/DD/YYYY");
-
-  useEffect(() => {
-    const saved = window.localStorage.getItem("expense-language");
-    if (saved === "en" || saved === "zh") setLanguageState(saved);
-    const savedDateFormat = window.localStorage.getItem("expense-date-format") as DateFormat | null;
-    if (["DD/MM/YYYY", "DD/MM/YY", "DD/MM", "MM/DD/YYYY", "MM/DD/YY", "MM/DD", "YYYY/MM/DD", "YY/MM/DD"].includes(savedDateFormat ?? "")) setDateFormatState(savedDateFormat!);
-  }, []);
+export function LanguageProvider({
+  children,
+  initialLanguage = "en",
+  initialDateFormat = "MM/DD/YYYY",
+}: {
+  children: React.ReactNode;
+  initialLanguage?: Language;
+  initialDateFormat?: DateFormat;
+}) {
+  const [language, setLanguageState] = useState<Language>(initialLanguage);
+  const [dateFormat, setDateFormatState] = useState<DateFormat>(initialDateFormat);
 
   const setLanguage = (nextLanguage: Language) => {
+    const previousLanguage = language;
     setLanguageState(nextLanguage);
-    window.localStorage.setItem("expense-language", nextLanguage);
     document.documentElement.lang = nextLanguage === "zh" ? "zh-CN" : "en";
+    void saveLanguage(nextLanguage).catch(() => {
+      setLanguageState(previousLanguage);
+      document.documentElement.lang = previousLanguage === "zh" ? "zh-CN" : "en";
+    });
   };
 
   const setDateFormat = (format: DateFormat) => {
+    const previousFormat = dateFormat;
     setDateFormatState(format);
-    window.localStorage.setItem("expense-date-format", format);
+    void saveDateFormat(format).catch(() => setDateFormatState(previousFormat));
   };
 
   const formatDate = (value: string | Date) => {

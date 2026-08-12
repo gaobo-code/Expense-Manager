@@ -81,15 +81,17 @@ export function SignUpForm({
           <CardDescription className="leading-6">{text.description}</CardDescription>
         </CardHeader>
         <CardContent className="px-6 pb-7 sm:px-8 sm:pb-8">
-          <form onSubmit={handleSignUp}>
+          <form autoComplete="off" onSubmit={handleSignUp}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
                 <Label htmlFor="email">{text.email}</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 text-slate-400" size={18} />
                 <Input
+                  autoComplete="off"
                   className="h-11 rounded-xl bg-slate-50 pl-10 dark:bg-slate-950/60"
                   id="email"
+                  name="signup-email"
                   type="email"
                   placeholder={text.emailPlaceholder}
                   required
@@ -103,8 +105,10 @@ export function SignUpForm({
                   <Label htmlFor="password">{text.password}</Label>
                 </div>
                 <div className="relative"><LockKeyhole className="absolute left-3 top-3 text-slate-400" size={18} /><Input
+                  autoComplete="new-password"
                   className="h-11 rounded-xl bg-slate-50 pl-10 dark:bg-slate-950/60"
                   id="password"
+                  name="signup-password"
                   type="password"
                   placeholder={text.passwordPlaceholder}
                   minLength={6}
@@ -118,8 +122,10 @@ export function SignUpForm({
                   <Label htmlFor="repeat-password">{text.confirm}</Label>
                 </div>
                 <div className="relative"><LockKeyhole className="absolute left-3 top-3 text-slate-400" size={18} /><Input
+                  autoComplete="new-password"
                   className="h-11 rounded-xl bg-slate-50 pl-10 dark:bg-slate-950/60"
                   id="repeat-password"
+                  name="signup-repeat-password"
                   type="password"
                   placeholder={text.confirmPlaceholder}
                   minLength={6}
