@@ -96,9 +96,11 @@ export function LanguageProvider({
     const previousLanguage = language;
     setLanguageState(nextLanguage);
     document.documentElement.lang = nextLanguage === "zh" ? "zh-CN" : "en";
+    document.cookie = `preferred_language=${nextLanguage}; Path=/; Max-Age=31536000; SameSite=Lax`;
     void saveLanguage(nextLanguage).catch(() => {
       setLanguageState(previousLanguage);
       document.documentElement.lang = previousLanguage === "zh" ? "zh-CN" : "en";
+      document.cookie = `preferred_language=${previousLanguage}; Path=/; Max-Age=31536000; SameSite=Lax`;
     });
   };
 

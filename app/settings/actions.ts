@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import type { DateFormat, Language } from "@/components/language-provider";
+import { cookies } from "next/headers";
 
 const languages: Language[] = ["en", "zh"];
 const dateFormats: DateFormat[] = [
@@ -11,6 +12,14 @@ const dateFormats: DateFormat[] = [
 
 export async function saveLanguage(language: Language) {
   if (!languages.includes(language)) throw new Error("Invalid language");
+
+  const cookieStore = await cookies();
+  cookieStore.set("preferred_language", language, {
+    maxAge: 60 * 60 * 24 * 365,
+    path: "/",
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+  });
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

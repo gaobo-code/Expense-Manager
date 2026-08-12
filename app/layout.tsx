@@ -5,6 +5,7 @@ import "./globals.css";
 import { LanguageProvider } from "@/components/language-provider";
 import type { DateFormat, Language } from "@/components/language-provider";
 import { createClient } from "@/lib/supabase/server";
+import { cookies } from "next/headers";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -39,6 +40,8 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const supabase = await createClient();
+  const cookieStore = await cookies();
+  const cookieLanguage = cookieStore.get("preferred_language")?.value;
   const { data: { user } } = await supabase.auth.getUser();
   const { data: settings } = user
     ? await supabase
@@ -47,7 +50,8 @@ export default async function RootLayout({
         .eq("user_id", user.id)
         .maybeSingle()
     : { data: null };
-  const language = (settings?.language ?? "en") as Language;
+  const fallbackLanguage: Language = cookieLanguage === "zh" ? "zh" : "en";
+  const language = (settings?.language ?? fallbackLanguage) as Language;
   const dateFormat = (settings?.date_format ?? "MM/DD/YYYY") as DateFormat;
 
   return (
