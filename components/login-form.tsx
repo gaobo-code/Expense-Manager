@@ -29,7 +29,7 @@ export function LoginForm({
   const text = language === "zh" ? {
     eyebrow: "欢迎回来",
     title: "登录你的账户",
-    description: "继续记录支出，掌握你的财务节奏。",
+    description: "继续记录收入与支出，掌握你的财务节奏。",
     email: "邮箱",
     emailPlaceholder: "请输入邮箱地址",
     password: "密码",
