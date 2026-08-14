@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
+import { createRecoveryClient } from "@/lib/supabase/recovery-client";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -34,17 +34,17 @@ export function ForgotPasswordForm({
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    const supabase = createClient();
+    const supabase = createRecoveryClient();
     setIsLoading(true);
     setError(null);
 
     try {
       // The url which will be included in the email. This URL needs to be configured in your redirect URLs in the Supabase dashboard at https://supabase.com/dashboard/project/_/auth/url-configuration
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        // Keep RedirectTo free of query parameters so the recovery template can
-        // safely append ?token_hash=...&type=recovery. Token hashes work across
-        // browsers and devices because they do not depend on a PKCE verifier.
-        redirectTo: `${window.location.origin}/auth/confirm`,
+        // Password recovery uses an implicit flow so the one-time recovery
+        // session travels in the email link instead of depending on a PKCE
+        // verifier stored in the browser that requested the email.
+        redirectTo: `${window.location.origin}/auth/update-password`,
       });
       if (error) throw error;
       setSuccess(true);
