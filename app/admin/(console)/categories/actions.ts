@@ -15,3 +15,24 @@ export async function createCommonCategory(formData: FormData) {
   revalidatePath("/admin/categories");
   redirect("/admin/categories");
 }
+
+export async function updateCommonCategory(formData: FormData) {
+  const categoryId = Number(String(formData.get("categoryId") ?? "").trim());
+  const nameZh = String(formData.get("nameZh") ?? "").trim();
+  const nameEn = String(formData.get("nameEn") ?? "").trim();
+
+  if (!Number.isSafeInteger(categoryId) || categoryId <= 0) redirect("/admin/categories?error=update");
+  if (!nameZh || !nameEn || nameZh.length > 60 || nameEn.length > 60) redirect("/admin/categories?error=invalid");
+
+  const { supabase, tokenHash } = await requireAdmin();
+  const { error } = await supabase.rpc("admin_update_category", {
+    session_token_hash: tokenHash,
+    category_id: categoryId,
+    category_name_zh: nameZh,
+    category_name_en: nameEn,
+  });
+
+  if (error) redirect("/admin/categories?error=update");
+  revalidatePath("/admin/categories");
+  redirect("/admin/categories");
+}
