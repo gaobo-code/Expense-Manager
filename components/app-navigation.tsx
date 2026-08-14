@@ -9,6 +9,7 @@ import {
   Menu,
   ReceiptText,
   Settings,
+  Tags,
   WalletCards,
   X,
 } from "lucide-react";
@@ -19,6 +20,7 @@ import { AccountMenu } from "@/components/account-menu";
 const items = [
   { label: "transactions" as MessageKey, href: "/", icon: ReceiptText },
   { label: "accounts" as MessageKey, href: "/accounts", icon: WalletCards },
+  { label: "categories" as MessageKey, href: "/categories", icon: Tags },
   { label: "analysis" as MessageKey, href: "/analysis", icon: BarChart3 },
   { label: "alerts" as MessageKey, href: "/alerts", icon: Bell },
   { label: "settings" as MessageKey, href: "/settings", icon: Settings },
