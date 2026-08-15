@@ -6,6 +6,7 @@ import { useState } from "react";
 import {
   BarChart3,
   Bell,
+  UsersRound,
   Menu,
   ReceiptText,
   Settings,
@@ -21,6 +22,7 @@ const items = [
   { label: "transactions" as MessageKey, href: "/", icon: ReceiptText },
   { label: "accounts" as MessageKey, href: "/accounts", icon: WalletCards },
   { label: "categories" as MessageKey, href: "/categories", icon: Tags },
+  { label: "customers" as MessageKey, href: "/customers", icon: UsersRound },
   { label: "analysis" as MessageKey, href: "/analysis", icon: BarChart3 },
   { label: "alerts" as MessageKey, href: "/alerts", icon: Bell },
   { label: "settings" as MessageKey, href: "/settings", icon: Settings },
@@ -54,7 +56,7 @@ export function AppNavigation() {
               return (
                 <Link
                   aria-current={active ? "page" : undefined}
-                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                  className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                     active
                       ? "bg-emerald-50 text-emerald-700"
                       : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
