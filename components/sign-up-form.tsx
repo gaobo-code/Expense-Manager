@@ -81,18 +81,19 @@ export function SignUpForm({
           <CardDescription className="leading-6">{text.description}</CardDescription>
         </CardHeader>
         <CardContent className="px-6 pb-7 sm:px-8 sm:pb-8">
-          <form autoComplete="off" onSubmit={handleSignUp}>
+          <form autoComplete="on" onSubmit={handleSignUp}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
                 <Label htmlFor="email">{text.email}</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 text-slate-400" size={18} />
                 <Input
-                  autoComplete="off"
+                  autoComplete="email"
                   className="h-11 rounded-xl bg-slate-50 pl-10 dark:bg-slate-950/60"
                   id="email"
-                  name="signup-email"
+                  name="email"
                   type="email"
+                  inputMode="email"
                   placeholder={text.emailPlaceholder}
                   required
                   value={email}

@@ -85,9 +85,12 @@ export function ForgotPasswordForm({
                   <Label htmlFor="email">{text.email}</Label>
                   <div className="relative"><Mail className="absolute left-3 top-3 text-slate-400" size={18} />
                   <Input
+                    autoComplete="email"
                     className="h-11 rounded-xl bg-slate-50 pl-10 dark:bg-slate-950/60"
                     id="email"
+                    name="email"
                     type="email"
+                    inputMode="email"
                     placeholder={text.placeholder}
                     required
                     value={email}

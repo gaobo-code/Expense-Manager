@@ -55,7 +55,7 @@ export function AuthShell({
   };
 
   return (
-    <main className="relative h-svh overflow-hidden bg-slate-50 text-slate-950 dark:bg-slate-950 dark:text-slate-50">
+    <main className="relative h-dvh overflow-x-hidden overflow-y-auto overscroll-y-contain bg-slate-50 text-slate-950 dark:bg-slate-950 dark:text-slate-50 lg:overflow-hidden">
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_10%_10%,rgba(16,185,129,0.12),transparent_32%),radial-gradient(circle_at_90%_90%,rgba(20,184,166,0.10),transparent_30%)]" />
       <header className="absolute inset-x-0 top-0 z-20 mx-auto flex h-20 max-w-7xl items-center justify-between px-5 sm:px-8">
         <button className="flex items-center gap-3 font-bold tracking-tight" onClick={handleBrandClick} type="button">
@@ -78,8 +78,8 @@ export function AuthShell({
         </div>
       </header>
 
-      <div className="relative z-10 mx-auto h-svh max-w-7xl lg:grid lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-12 lg:px-8 lg:pb-12 lg:pt-28">
-        <section className={`absolute inset-0 flex h-svh flex-col justify-center px-5 pb-8 pt-24 transition-[transform,opacity] duration-500 ease-out sm:px-8 lg:pointer-events-auto lg:static lg:h-auto lg:max-w-xl lg:translate-x-0 lg:px-0 lg:py-0 lg:opacity-100 ${mobileScreen === "intro" ? "translate-x-0 opacity-100" : "-translate-x-full opacity-0 pointer-events-none"}`}>
+      <div className="relative z-10 mx-auto min-h-dvh max-w-7xl lg:grid lg:h-svh lg:min-h-0 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-12 lg:px-8 lg:pb-12 lg:pt-28">
+        <section className={`absolute inset-x-0 top-0 flex min-h-dvh flex-col justify-center px-5 pb-8 pt-24 transition-[transform,opacity] duration-500 ease-out sm:px-8 lg:pointer-events-auto lg:static lg:min-h-0 lg:max-w-xl lg:translate-x-0 lg:px-0 lg:py-0 lg:opacity-100 ${mobileScreen === "intro" ? "translate-x-0 opacity-100" : "-translate-x-full opacity-0 pointer-events-none"}`}>
           <div className="mb-4 inline-flex w-fit items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-300 sm:mb-6 sm:text-sm">
             <ReceiptText size={16} /> {text.tagline}
           </div>
@@ -116,7 +116,7 @@ export function AuthShell({
           </button>
         </section>
 
-        <section className={`absolute inset-0 mx-auto flex h-svh w-full max-w-md flex-col justify-center px-5 pb-6 pt-24 transition-[transform,opacity] duration-500 ease-out sm:px-8 lg:pointer-events-auto lg:static lg:h-auto lg:translate-x-0 lg:px-0 lg:py-0 lg:opacity-100 ${mobileScreen === "form" ? "translate-x-0 opacity-100" : "translate-x-full opacity-0 pointer-events-none"}`}>
+        <section className={`absolute inset-x-0 top-0 mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center px-5 pb-6 pt-24 transition-[transform,opacity] duration-500 ease-out sm:px-8 lg:pointer-events-auto lg:static lg:min-h-0 lg:translate-x-0 lg:px-0 lg:py-0 lg:opacity-100 ${mobileScreen === "form" ? "translate-x-0 opacity-100" : "translate-x-full opacity-0 pointer-events-none"}`}>
           {children}
           <div className="mt-6 flex items-center justify-center gap-2 text-xs text-slate-500 dark:text-slate-400">
             <ShieldCheck size={15} />
