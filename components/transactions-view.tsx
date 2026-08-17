@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { ArrowDown, ArrowUp, ChevronsUpDown, CreditCard, Landmark, Plus, WalletCards } from "lucide-react";
 import { PageShell } from "@/components/page-shell";
 import { TransactionDialog } from "@/components/transaction-dialog";
@@ -26,6 +26,29 @@ export function TransactionsView({ transactions, categories, customers, hasError
   const labels = useMemo(() => zh ? { add: "添加交易", empty: "还没有交易", emptyHelp: "记录第一笔收入或支出。", account: "账户", customer: "客户", error: "交易保存失败，请检查填写内容后重试。", credit_card: "信用卡账户", cash: "现金", bank: "银行账户" } : { add: "Add transaction", empty: "No transactions yet", emptyHelp: "Record your first transaction.", account: "Account", customer: "Customer", error: "The transaction could not be saved. Check the form and try again.", credit_card: "Credit card", cash: "Cash", bank: "Bank account" }, [zh]);
   const icons = { credit_card: CreditCard, cash: WalletCards, bank: Landmark };
   const categoryNames = useMemo(() => new Map(categories.map((category) => [category.id, getCategoryName(category, language)])), [categories, language]);
+  const categoryMap = useMemo(() => new Map(categories.map((category) => [category.id, category])), [categories]);
+  const monthlyNets = useMemo(() => {
+    const result = new Map<string, Record<Currency, number>>();
+    const isIncome = (transaction: Transaction) => {
+      let category = transaction.category_id ? categoryMap.get(transaction.category_id) : undefined;
+      const visited = new Set<number>();
+      while (category?.parent_id && !visited.has(category.id)) {
+        visited.add(category.id);
+        category = categoryMap.get(category.parent_id) ?? category;
+        if (!category.parent_id) break;
+      }
+      const names = category ? `${category.name_zh} ${category.name_en}` : transaction.category;
+      return /收入|(^|\s)income(\s|$)/i.test(names.trim());
+    };
+
+    transactions.forEach((transaction) => {
+      const month = transaction.transaction_date.slice(0, 7);
+      const totals = result.get(month) ?? { CNY: 0, USD: 0 };
+      totals[transaction.currency] += transaction.amount * (isIncome(transaction) ? 1 : -1);
+      result.set(month, totals);
+    });
+    return result;
+  }, [categoryMap, transactions]);
   const sortedTransactions = useMemo(() => {
     const collator = new Intl.Collator(zh ? "zh-CN" : "en-US", { numeric: true, sensitivity: "base" });
     const valueFor = (transaction: Transaction) => {
@@ -62,7 +85,7 @@ export function TransactionsView({ transactions, categories, customers, hasError
       {hasError ? <div className="border-b border-amber-200 bg-amber-50 px-6 py-4 text-sm text-amber-800">{t("unavailable")}</div> : null}
       {transactions.length === 0 && !hasError ? <div className="px-6 py-16 text-center"><div className="mx-auto mb-4 grid size-12 place-items-center rounded-2xl bg-emerald-50 text-emerald-700"><WalletCards /></div><p className="font-semibold">{labels.empty}</p><p className="mt-1 text-sm text-slate-500">{labels.emptyHelp}</p></div> :
       <div className="w-full overflow-hidden"><table className="w-full table-fixed border-collapse text-center"><thead className="bg-slate-50 text-[10px] uppercase tracking-wide text-slate-500 md:text-xs md:tracking-wider"><tr>{renderSortHeader("date", t("date"), "w-[28%] px-2 py-3 md:w-auto md:px-5 md:py-4")}{renderSortHeader("category", t("category"), "w-[28%] px-2 py-3 md:w-auto md:px-5 md:py-4")}{renderSortHeader("account", labels.account, "hidden px-5 py-4 md:table-cell")}{renderSortHeader("customer", labels.customer, "hidden px-5 py-4 md:table-cell")}{renderSortHeader("amount", t("amount"), "w-[32%] px-2 py-3 md:w-auto md:px-5 md:py-4")}<th className="w-[12%] md:w-16" /></tr></thead><tbody className="divide-y divide-slate-100">
-        {sortedTransactions.map((transaction) => { const Icon = icons[transaction.account_type] ?? WalletCards; const categoryName = transaction.category_id ? categoryNames.get(transaction.category_id) : null; return <tr key={transaction.id} className="hover:bg-slate-50"><td className="break-words px-2 py-4 text-xs font-medium text-slate-700 md:px-5 md:text-sm">{formatDate(`${transaction.transaction_date}T00:00:00Z`)}</td><td className="break-words px-2 py-4 md:px-5"><span className="inline-flex max-w-full break-words rounded-full bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 md:px-3 md:text-sm">{categoryName ?? transaction.category}</span></td><td className="hidden px-5 py-4 text-sm text-slate-600 md:table-cell"><span className="inline-flex items-center gap-2"><Icon size={16}/>{labels[transaction.account_type]}</span></td><td className="hidden px-5 py-4 text-sm text-slate-600 md:table-cell">{transaction.customers?.name ?? "—"}</td><td className="break-words px-2 py-4 text-xs font-semibold tabular-nums md:px-5 md:text-sm">{new Intl.NumberFormat(zh ? "zh-CN" : "en-US", { style: "currency", currency: transaction.currency }).format(transaction.amount)}</td><td className="pr-1 md:pr-3"><TransactionDialog transaction={transaction} categories={categories} customers={customers} /></td></tr>; })}
+        {sortedTransactions.map((transaction, index) => { const Icon = icons[transaction.account_type] ?? WalletCards; const categoryName = transaction.category_id ? categoryNames.get(transaction.category_id) : null; const month = transaction.transaction_date.slice(0, 7); const nextMonth = sortedTransactions[index + 1]?.transaction_date.slice(0, 7); const showMonthlyNet = sort.key === "date" && month !== nextMonth; const totals = monthlyNets.get(month); const usedCurrencies = (["CNY", "USD"] as Currency[]).filter((currency) => transactions.some((item) => item.transaction_date.startsWith(month) && item.currency === currency)); const monthLabel = new Intl.DateTimeFormat(zh ? "zh-CN" : "en-US", { year: "numeric", month: "long", timeZone: "UTC" }).format(new Date(`${month}-01T00:00:00Z`)); return <Fragment key={transaction.id}><tr className="hover:bg-slate-50"><td className="break-words px-2 py-4 text-xs font-medium text-slate-700 md:px-5 md:text-sm">{formatDate(`${transaction.transaction_date}T00:00:00Z`)}</td><td className="break-words px-2 py-4 md:px-5"><span className="inline-flex max-w-full break-words rounded-full bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 md:px-3 md:text-sm">{categoryName ?? transaction.category}</span></td><td className="hidden px-5 py-4 text-sm text-slate-600 md:table-cell"><span className="inline-flex items-center gap-2"><Icon size={16}/>{labels[transaction.account_type]}</span></td><td className="hidden px-5 py-4 text-sm text-slate-600 md:table-cell">{transaction.customers?.name ?? "—"}</td><td className="break-words px-2 py-4 text-xs font-semibold tabular-nums md:px-5 md:text-sm">{new Intl.NumberFormat(zh ? "zh-CN" : "en-US", { style: "currency", currency: transaction.currency, currencyDisplay: "narrowSymbol" }).format(transaction.amount)}</td><td className="pr-1 md:pr-3"><TransactionDialog transaction={transaction} categories={categories} customers={customers} /></td></tr>{showMonthlyNet && totals ? <tr className="border-y border-emerald-100 bg-gradient-to-r from-emerald-50/80 to-white"><td colSpan={6} className="px-4 py-3 text-left md:pl-14 md:pr-5" title={`${monthLabel} ${zh ? "收支差额" : "net"}`}><div className="inline-flex items-center gap-2 text-emerald-700"><span className="text-xl font-light leading-none text-emerald-600" aria-hidden="true">∑</span><span className="text-xs font-semibold tabular-nums md:text-sm">{usedCurrencies.map((currency) => new Intl.NumberFormat(zh ? "zh-CN" : "en-US", { style: "currency", currency, currencyDisplay: "narrowSymbol", signDisplay: "exceptZero" }).format(totals[currency])).join(" / ")}</span><span className="sr-only">{monthLabel} {zh ? "收支差额" : "net"}</span></div></td></tr> : null}</Fragment>; })}
       </tbody></table></div>}
     </div>
   </section></PageShell>;
