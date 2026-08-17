@@ -58,19 +58,19 @@ export function AdminLoginForm() {
       <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-950">{text.title}</h1>
       <p className="mt-3 text-sm leading-6 text-slate-500">{text.description}</p>
 
-      <form action={action} autoComplete="on" className="mt-8 space-y-5">
+      <form action={action} autoComplete="off" className="mt-8 space-y-5">
         <div className="space-y-2">
           <Label htmlFor="admin-username">{text.username}</Label>
           <div className="relative">
             <UserRound className="absolute left-3 top-3 text-slate-400" size={18} />
-            <Input id="admin-username" name="username" autoComplete="username" required className="h-11 rounded-xl pl-10" placeholder={text.usernamePlaceholder} value={username} onChange={(event) => setUsername(event.target.value)} />
+            <Input id="admin-username" name="username" autoComplete="off" required className="h-11 rounded-xl pl-10" placeholder={text.usernamePlaceholder} value={username} onChange={(event) => setUsername(event.target.value)} />
           </div>
         </div>
         <div className="space-y-2">
           <Label htmlFor="admin-password">{text.password}</Label>
           <div className="relative">
             <LockKeyhole className="absolute left-3 top-3 text-slate-400" size={18} />
-            <Input id="admin-password" name="password" type="password" autoComplete="current-password" required className="h-11 rounded-xl pl-10" placeholder={text.passwordPlaceholder} value={password} onChange={(event) => setPassword(event.target.value)} />
+            <Input id="admin-password" name="password" type="password" autoComplete="new-password" required className="h-11 rounded-xl pl-10" placeholder={text.passwordPlaceholder} value={password} onChange={(event) => setPassword(event.target.value)} />
           </div>
         </div>
         {error ? <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p> : null}

@@ -2,13 +2,14 @@
 
 import { adminLogout } from "@/app/admin/actions";
 import { Button } from "@/components/ui/button";
-import { LogOut, Menu, ShieldCheck, Tags, X } from "lucide-react";
+import { BellRing, LogOut, Menu, ShieldCheck, Tags, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 const items = [
   { href: "/admin/categories", label: "类别", icon: Tags },
+  { href: "/admin/notices", label: "提示", icon: BellRing },
 ];
 
 function isActive(pathname: string, href: string) {
