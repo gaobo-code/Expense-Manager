@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/components/language-provider";
 import { ArrowRight, LockKeyhole, Mail } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function LoginForm({
   className,
@@ -25,6 +25,7 @@ export function LoginForm({
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const stopPasswordViewportTracking = useRef<() => void>(() => {});
   const { language } = useLanguage();
   const text = language === "zh" ? {
     eyebrow: "欢迎回来",
@@ -86,15 +87,49 @@ export function LoginForm({
     }
   };
 
+  useEffect(() => () => stopPasswordViewportTracking.current(), []);
+
   const handlePasswordFocus = (event: React.FocusEvent<HTMLInputElement>) => {
     const input = event.currentTarget;
+    const viewport = window.visualViewport;
+    const timers: number[] = [];
 
-    // Mobile browsers can focus the field before the software keyboard has
-    // finished resizing the visual viewport. Reposition it once that animation
-    // has settled so the first keyboard opening does not cover the field.
-    window.setTimeout(() => {
-      input.scrollIntoView({ block: "center", behavior: "smooth" });
-    }, 350);
+    stopPasswordViewportTracking.current();
+
+    const keepInputVisible = () => {
+      if (document.activeElement !== input) return;
+
+      const rect = input.getBoundingClientRect();
+      const visibleTop = viewport?.offsetTop ?? 0;
+      const visibleBottom = visibleTop + (viewport?.height ?? window.innerHeight);
+      const safeGap = 24;
+
+      if (
+        rect.top < visibleTop + safeGap ||
+        rect.bottom > visibleBottom - safeGap
+      ) {
+        // An instant correction avoids racing the keyboard's own animation.
+        input.scrollIntoView({ block: "center", inline: "nearest" });
+      }
+    };
+
+    viewport?.addEventListener("resize", keepInputVisible);
+    viewport?.addEventListener("scroll", keepInputVisible);
+    window.addEventListener("resize", keepInputVisible);
+
+    // Browsers report the keyboard resize at different points in its animation.
+    // The viewport listeners handle normal updates; these checks cover WebViews
+    // that only publish the final viewport dimensions.
+    [0, 100, 250, 500, 800].forEach((delay) => {
+      timers.push(window.setTimeout(keepInputVisible, delay));
+    });
+
+    stopPasswordViewportTracking.current = () => {
+      timers.forEach(window.clearTimeout);
+      viewport?.removeEventListener("resize", keepInputVisible);
+      viewport?.removeEventListener("scroll", keepInputVisible);
+      window.removeEventListener("resize", keepInputVisible);
+    };
   };
 
   return (
@@ -122,7 +157,7 @@ export function LoginForm({
                     {text.forgot}
                   </Link>
                 </div>
-                <div className="relative"><LockKeyhole className="absolute left-3 top-3 text-slate-400" size={18} /><Input autoComplete="new-password" className="h-11 scroll-my-24 rounded-xl bg-slate-50 pl-10 dark:bg-slate-950/60" id="password" name="password" type="password" placeholder={text.passwordPlaceholder} required value={password} onChange={(e) => setPassword(e.target.value)} onFocus={handlePasswordFocus} /></div>
+                <div className="relative"><LockKeyhole className="absolute left-3 top-3 text-slate-400" size={18} /><Input autoComplete="new-password" className="h-11 scroll-my-24 rounded-xl bg-slate-50 pl-10 dark:bg-slate-950/60" id="password" name="password" type="password" placeholder={text.passwordPlaceholder} required value={password} onBlur={() => stopPasswordViewportTracking.current()} onChange={(e) => setPassword(e.target.value)} onFocus={handlePasswordFocus} /></div>
               </div>
               {error && <p className="text-sm text-red-500">{error}</p>}
               <Button type="submit" className="h-11 w-full rounded-xl bg-emerald-600 text-white shadow-lg shadow-emerald-600/20 hover:bg-emerald-700" disabled={isLoading}>
