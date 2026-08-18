@@ -7,14 +7,14 @@ import { PageShell } from "@/components/page-shell";
 import type { Currency, Transaction } from "@/components/transactions-view";
 import type { Category } from "@/lib/categories";
 
-const currencies: Currency[] = ["CNY", "USD"];
+const currencies: Currency[] = ["USD", "CNY"];
 type PeriodKey = "currentMonth" | "previousMonth" | "currentYear";
 type PeriodValue = { key: PeriodKey; label: string; income: number; expense: number; net: number };
 
 export function AnalysisView({ transactions, categories, hasError }: { transactions: Transaction[]; categories: Category[]; hasError: boolean }) {
   const { language, t } = useLanguage();
   const zh = language === "zh";
-  const [currency, setCurrency] = useState<Currency>("CNY");
+  const [currency, setCurrency] = useState<Currency>(() => language === "zh" ? "CNY" : "USD");
   const labels = zh ? {
     title: "收支分析", description: "统计本月、上个月和本年的收入与支出。", income: "收入", expense: "支出", net: "结余", currentMonth: "本月", previousMonth: "上个月", currentYear: "本年", comparison: "周期收支对比", comparisonHint: "各周期独立统计，不进行币种换算", noData: "暂无可分析的交易", noDataHint: "添加交易后，这里会自动生成图表。", unavailable: "暂时无法获取分析数据，请稍后重试。",
   } : {
