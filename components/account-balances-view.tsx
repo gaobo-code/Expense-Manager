@@ -28,7 +28,7 @@ function shiftDate(value: string, days: number) {
 }
 
 export function AccountBalancesView({ transactions, categories, hasError }: { transactions: Transaction[]; categories: Category[]; hasError: boolean }) {
-  const { language, t } = useLanguage();
+  const { language, formatDate, t } = useLanguage();
   const [selectedDate, setSelectedDate] = useState(todayInLocalTime);
   const zh = language === "zh";
   const labels = zh
@@ -64,7 +64,7 @@ export function AccountBalancesView({ transactions, categories, hasError }: { tr
     <div className="mb-3.5 flex flex-col gap-3 sm:mb-10 sm:flex-row sm:items-end sm:justify-between sm:gap-5">
       <div className="max-w-xl"><p className="mb-1.5 hidden text-xs font-bold uppercase tracking-[0.18em] text-emerald-600 sm:block sm:text-sm">{t("appName")}</p><h1 className="text-2xl font-bold tracking-tight sm:text-4xl lg:text-[2.75rem]">{labels.title}</h1><p className="mt-2 hidden text-sm leading-6 text-slate-500 sm:block sm:text-base">{labels.description}</p></div>
       <div className="relative flex w-full items-stretch rounded-2xl border border-emerald-200/80 bg-gradient-to-r from-emerald-50 via-white to-white shadow-[0_8px_24px_-16px_rgba(5,150,105,0.65)] sm:w-auto sm:border-slate-200 sm:bg-white sm:bg-none sm:shadow-sm">
-        <div className="min-w-0 flex-1 px-3.5 py-2.5 sm:block sm:flex-none sm:px-4"><span className="mb-1 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-700 sm:text-xs sm:font-semibold sm:normal-case sm:tracking-normal sm:text-slate-500"><span className="grid size-6 place-items-center rounded-lg bg-emerald-100 ring-1 ring-emerald-200/60 sm:contents sm:ring-0"><CalendarDays size={13} className="sm:size-3.5" /></span>{labels.asOf}</span><CalendarPicker value={selectedDate} onChange={setSelectedDate} language={language} /></div>
+        <div className="min-w-0 flex-1 px-3.5 py-2.5 sm:block sm:flex-none sm:px-4"><span className="mb-1 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-700 sm:text-xs sm:font-semibold sm:normal-case sm:tracking-normal sm:text-slate-500"><span className="grid size-6 place-items-center rounded-lg bg-emerald-100 ring-1 ring-emerald-200/60 sm:contents sm:ring-0"><CalendarDays size={13} className="sm:size-3.5" /></span>{labels.asOf}</span><CalendarPicker value={selectedDate} onChange={setSelectedDate} language={language} formattedValue={formatDate(`${selectedDate}T00:00:00Z`)} /></div>
         <div className="grid w-12 overflow-hidden rounded-r-2xl border-l border-emerald-100 bg-white/60 sm:w-11 sm:border-slate-200 sm:bg-transparent">
           <button type="button" onClick={() => setSelectedDate((date) => shiftDate(date, 1))} className="grid min-h-8 place-items-center border-b border-emerald-100 text-slate-500 transition active:bg-emerald-100 sm:border-slate-200 sm:hover:bg-slate-50 sm:hover:text-emerald-700" aria-label={zh ? "后一天" : "Next day"} title={zh ? "后一天" : "Next day"}><ChevronUp size={16} /></button>
           <button type="button" onClick={() => setSelectedDate((date) => shiftDate(date, -1))} className="grid min-h-8 place-items-center text-slate-500 transition active:bg-emerald-100 sm:hover:bg-slate-50 sm:hover:text-emerald-700" aria-label={zh ? "前一天" : "Previous day"} title={zh ? "前一天" : "Previous day"}><ChevronDown size={16} /></button>
@@ -78,7 +78,7 @@ export function AccountBalancesView({ transactions, categories, hasError }: { tr
   </section></PageShell>;
 }
 
-function CalendarPicker({ value, onChange, language }: { value: string; onChange: (value: string) => void; language: "zh" | "en" }) {
+function CalendarPicker({ value, onChange, language, formattedValue }: { value: string; onChange: (value: string) => void; language: "zh" | "en"; formattedValue: string }) {
   const [open, setOpen] = useState(false);
   const selected = parseLocalDate(value);
   const [month, setMonth] = useState(new Date(selected.getFullYear(), selected.getMonth(), 1));
@@ -110,7 +110,7 @@ function CalendarPicker({ value, onChange, language }: { value: string; onChange
   };
 
   return <div ref={rootRef}>
-    <button type="button" onClick={() => setOpen((current) => !current)} aria-haspopup="dialog" aria-expanded={open} className="flex w-full items-center justify-between gap-2 bg-transparent text-left font-bold tabular-nums text-slate-950 outline-none sm:block sm:w-40 sm:text-sm sm:font-semibold"><span className="text-[15px] sm:hidden">{new Intl.DateTimeFormat(zh ? "zh-CN" : "en-US", { year: "numeric", month: "short", day: "numeric", weekday: "short" }).format(selected)}</span><span className="hidden sm:inline">{value}</span><ChevronRight size={15} className={`shrink-0 text-emerald-600 transition-transform sm:hidden ${open ? "rotate-90" : ""}`} /></button>
+    <button type="button" onClick={() => setOpen((current) => !current)} aria-haspopup="dialog" aria-expanded={open} className="flex w-full items-center justify-between gap-2 bg-transparent text-left font-bold tabular-nums text-slate-950 outline-none sm:block sm:w-40 sm:text-sm sm:font-semibold"><span>{formattedValue}</span><ChevronRight size={15} className={`shrink-0 text-emerald-600 transition-transform sm:hidden ${open ? "rotate-90" : ""}`} /></button>
     {open ? <div role="dialog" aria-label={zh ? "选择日期" : "Choose date"} className="absolute right-0 top-[calc(100%+0.5rem)] z-30 w-[300px] rounded-2xl border border-slate-200 bg-white p-4 shadow-xl sm:w-[320px]">
       <div className="mb-3 flex items-center justify-between"><button type="button" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))} className="grid size-9 place-items-center rounded-full text-slate-500 hover:bg-slate-100" aria-label={zh ? "上个月" : "Previous month"}><ChevronLeft size={18} /></button><p className="font-semibold text-slate-900">{new Intl.DateTimeFormat(zh ? "zh-CN" : "en-US", { year: "numeric", month: "long" }).format(month)}</p><button type="button" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))} className="grid size-9 place-items-center rounded-full text-slate-500 hover:bg-slate-100" aria-label={zh ? "下个月" : "Next month"}><ChevronRight size={18} /></button></div>
       <div className="grid grid-cols-7 text-center">{weekdays.map((day) => <span key={day} className="py-2 text-xs font-semibold text-slate-400">{day}</span>)}{cells.map((cell, index) => { const date = new Date(month.getFullYear(), month.getMonth() + cell.delta, cell.day); const dateValue = toLocalDateValue(date); const isSelected = dateValue === value; const isToday = dateValue === todayInLocalTime(); return <button type="button" key={`${cell.delta}-${cell.day}-${index}`} onClick={() => choose(cell.day, cell.delta)} className={`mx-auto my-0.5 grid size-9 place-items-center rounded-full text-sm transition ${isSelected ? "bg-emerald-600 font-semibold text-white shadow-sm" : cell.delta !== 0 ? "text-slate-300 hover:bg-slate-50" : isToday ? "bg-emerald-50 font-semibold text-emerald-700 hover:bg-emerald-100" : "text-slate-700 hover:bg-slate-100"}`}>{cell.day}</button>; })}</div>
