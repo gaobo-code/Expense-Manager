@@ -13,11 +13,13 @@ function readNoticeId(formData: FormData) {
 }
 
 export async function createNotice(formData: FormData) {
-  const title = String(formData.get("title") ?? "").trim();
-  const content = String(formData.get("content") ?? "").trim();
+  const titleZh = String(formData.get("titleZh") ?? "").trim();
+  const contentZh = String(formData.get("contentZh") ?? "").trim();
+  const titleEn = String(formData.get("titleEn") ?? "").trim();
+  const contentEn = String(formData.get("contentEn") ?? "").trim();
   const thumbnail = formData.get("thumbnail");
 
-  if (!title || title.length > 120 || !content || content.length > 5000) redirect("/admin/notices?error=invalid");
+  if (!titleZh || titleZh.length > 120 || !contentZh || contentZh.length > 5000 || !titleEn || titleEn.length > 120 || !contentEn || contentEn.length > 5000) redirect("/admin/notices?error=invalid");
   if (!(thumbnail instanceof File) || thumbnail.size < 1 || thumbnail.size > maxThumbnailSize || !acceptedImageTypes.has(thumbnail.type)) {
     redirect("/admin/notices?error=image");
   }
@@ -26,8 +28,10 @@ export async function createNotice(formData: FormData) {
   const { supabase, tokenHash } = await requireAdmin();
   const { error } = await supabase.rpc("admin_create_notice", {
     session_token_hash: tokenHash,
-    notice_title: title,
-    notice_content: content,
+    notice_title_zh: titleZh,
+    notice_content_zh: contentZh,
+    notice_title_en: titleEn,
+    notice_content_en: contentEn,
     thumbnail_base64: thumbnailBase64,
     thumbnail_content_type: thumbnail.type,
   });
@@ -39,11 +43,13 @@ export async function createNotice(formData: FormData) {
 
 export async function updateNotice(formData: FormData) {
   const noticeId = readNoticeId(formData);
-  const title = String(formData.get("title") ?? "").trim();
-  const content = String(formData.get("content") ?? "").trim();
+  const titleZh = String(formData.get("titleZh") ?? "").trim();
+  const contentZh = String(formData.get("contentZh") ?? "").trim();
+  const titleEn = String(formData.get("titleEn") ?? "").trim();
+  const contentEn = String(formData.get("contentEn") ?? "").trim();
   const thumbnail = formData.get("thumbnail");
 
-  if (noticeId === null || !title || title.length > 120 || !content || content.length > 5000) redirect("/admin/notices?error=invalid");
+  if (noticeId === null || !titleZh || titleZh.length > 120 || !contentZh || contentZh.length > 5000 || !titleEn || titleEn.length > 120 || !contentEn || contentEn.length > 5000) redirect("/admin/notices?error=invalid");
   const hasNewThumbnail = thumbnail instanceof File && thumbnail.size > 0;
   if (hasNewThumbnail && (thumbnail.size > maxThumbnailSize || !acceptedImageTypes.has(thumbnail.type))) redirect("/admin/notices?error=image");
 
@@ -52,8 +58,10 @@ export async function updateNotice(formData: FormData) {
   const { error } = await supabase.rpc("admin_update_notice", {
     session_token_hash: tokenHash,
     notice_id: noticeId,
-    notice_title: title,
-    notice_content: content,
+    notice_title_zh: titleZh,
+    notice_content_zh: contentZh,
+    notice_title_en: titleEn,
+    notice_content_en: contentEn,
     thumbnail_base64: thumbnailBase64,
     thumbnail_content_type: hasNewThumbnail ? thumbnail.type : null,
   });

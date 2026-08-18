@@ -34,9 +34,9 @@ export function AdminNoticeActions({ notice }: { notice: Notice }) {
   }
 
   return <>
-    <div className="absolute right-3 top-3 z-10 flex gap-2">
-      <Button type="button" variant="ghost" size="icon" aria-label="修改提示" title="修改提示" onClick={() => setOpen(true)} className="size-10 rounded-xl border border-white/80 bg-white/90 text-slate-600 shadow-lg shadow-slate-900/10 backdrop-blur-md hover:bg-emerald-50 hover:text-emerald-700"><Pencil size={17}/></Button>
-      <Button type="button" variant="ghost" size="icon" aria-label="删除提示" title="删除提示" onClick={() => setConfirmDelete(true)} className="size-10 rounded-xl border border-red-100 bg-white/90 text-red-600 shadow-lg shadow-slate-900/10 backdrop-blur-md hover:bg-red-50 hover:text-red-700"><Trash2 size={17}/></Button>
+    <div className="flex shrink-0 items-center gap-1">
+      <Button type="button" variant="ghost" size="icon" aria-label="修改提示" title="修改提示" onClick={() => setOpen(true)} className="size-8 rounded-lg border border-white/80 bg-white/90 text-slate-600 shadow-md shadow-slate-900/10 backdrop-blur-md hover:bg-emerald-50 hover:text-emerald-700"><Pencil className="size-3.5"/></Button>
+      <Button type="button" variant="ghost" size="icon" aria-label="删除提示" title="删除提示" onClick={() => setConfirmDelete(true)} className="size-8 rounded-lg border border-red-100 bg-white/90 text-red-600 shadow-md shadow-slate-900/10 backdrop-blur-md hover:bg-red-50 hover:text-red-700"><Trash2 className="size-3.5"/></Button>
     </div>
 
     {confirmDelete ? <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6">
@@ -61,8 +61,10 @@ export function AdminNoticeActions({ notice }: { notice: Notice }) {
         </div>
         <form action={updateNotice} className="space-y-5">
           <input type="hidden" name="noticeId" value={notice.id}/>
-          <div className="space-y-2"><Label htmlFor={`notice-title-${notice.id}`}>提示标题</Label><Input id={`notice-title-${notice.id}`} name="title" required maxLength={120} autoFocus defaultValue={notice.title} className="h-11 rounded-xl" /></div>
-          <div className="space-y-2"><Label htmlFor={`notice-content-${notice.id}`}>提示内容</Label><textarea id={`notice-content-${notice.id}`} name="content" required maxLength={5000} rows={6} defaultValue={notice.content} className="w-full resize-y rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500/30" /></div>
+          <div className="space-y-2"><Label htmlFor={`notice-title-zh-${notice.id}`}>中文标题</Label><Input id={`notice-title-zh-${notice.id}`} name="titleZh" required maxLength={120} autoFocus defaultValue={notice.title_zh} className="h-11 rounded-xl" /></div>
+          <div className="space-y-2"><Label htmlFor={`notice-content-zh-${notice.id}`}>中文内容</Label><textarea id={`notice-content-zh-${notice.id}`} name="contentZh" required maxLength={5000} rows={4} defaultValue={notice.content_zh} className="w-full resize-y rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500/30" /></div>
+          <div className="space-y-2"><Label htmlFor={`notice-title-en-${notice.id}`}>英文标题</Label><Input id={`notice-title-en-${notice.id}`} name="titleEn" required maxLength={120} defaultValue={notice.title_en} className="h-11 rounded-xl" /></div>
+          <div className="space-y-2"><Label htmlFor={`notice-content-en-${notice.id}`}>英文内容</Label><textarea id={`notice-content-en-${notice.id}`} name="contentEn" required maxLength={5000} rows={4} defaultValue={notice.content_en} className="w-full resize-y rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500/30" /></div>
           <div className="space-y-2">
             <Label htmlFor={`notice-thumbnail-${notice.id}`}>提示缩略图</Label>
             <input ref={inputRef} id={`notice-thumbnail-${notice.id}`} name="thumbnail" type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="sr-only" onChange={(event) => selectThumbnail(event.target.files?.[0])}/>

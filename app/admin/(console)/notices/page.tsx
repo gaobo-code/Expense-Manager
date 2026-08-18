@@ -23,15 +23,17 @@ export default async function AdminNoticesPage({ searchParams }: { searchParams:
     {query.created ? <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">提示已添加。</p> : null}
     {query.updated ? <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">提示已修改。</p> : null}
 
-    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
-      <div className="mb-5 flex items-center justify-between"><div><h2 className="font-semibold">提示列表</h2><p className="mt-1 text-xs text-slate-500 sm:text-sm">按创建时间从新到旧排列</p></div><span className="text-sm text-slate-500">共 {notices.length} 项</span></div>
+    <div className="-mx-3 rounded-xl border border-slate-200 bg-white p-1 shadow-sm sm:mx-0 sm:p-6">
+      <div className="mb-5 flex items-center justify-between px-1 pt-2 sm:px-0 sm:pt-0"><div><h2 className="font-semibold">提示列表</h2><p className="mt-1 text-xs text-slate-500 sm:text-sm">按创建时间从新到旧排列</p></div><span className="text-sm text-slate-500">共 {notices.length} 项</span></div>
       {error ? <p className="rounded-xl bg-red-50 p-5 text-sm text-red-600">无法读取提示，请先应用最新的 Supabase 迁移。</p> : notices.length === 0 ? <div className="grid min-h-64 place-items-center text-center"><div><BellRing className="mx-auto text-slate-300" size={38}/><p className="mt-4 font-semibold">还没有提示</p><p className="mt-1 text-sm text-slate-500">点击“添加提示”创建第一条内容</p></div></div> :
-      <div className="grid gap-4 md:grid-cols-2">{notices.map((notice) => <article key={notice.id} className="relative overflow-hidden rounded-xl border border-slate-200 bg-white transition-shadow hover:shadow-md">
-        <div className="relative aspect-[16/8] overflow-hidden bg-slate-100">
+      <div className="grid gap-2 sm:gap-4 md:grid-cols-2">{notices.map((notice) => <article key={notice.id} className="relative flex h-32 overflow-hidden rounded-xl border border-slate-200 bg-white transition-shadow hover:shadow-md sm:h-auto sm:min-h-44">
+        <div className="relative aspect-square h-full w-32 shrink-0 overflow-hidden bg-slate-100 sm:h-44 sm:w-44">
           {notice.thumbnail_data ? <img src={`data:${notice.thumbnail_mime};base64,${notice.thumbnail_data}`} alt="" className="h-full w-full object-cover" /> : <ImageIcon className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-slate-300" />}
         </div>
-        <AdminNoticeActions notice={notice}/>
-        <div className="p-4"><div className="flex items-start justify-between gap-3"><h3 className="font-bold text-slate-900">{notice.title}</h3><time className="shrink-0 text-xs text-slate-400" dateTime={notice.created_at}>{new Intl.DateTimeFormat("zh-CN", { dateStyle: "medium" }).format(new Date(notice.created_at))}</time></div><p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-600">{notice.content}</p></div>
+        <div className="min-w-0 flex-1 overflow-hidden p-2 sm:p-5">
+          <div className="flex items-center gap-2"><h3 className="min-w-0 flex-1 truncate font-bold text-slate-900">{notice.title_zh}</h3><AdminNoticeActions notice={notice}/></div>
+          <p className="mt-1 line-clamp-2 overflow-hidden whitespace-pre-wrap text-ellipsis text-sm leading-6 text-slate-600 sm:line-clamp-4">{notice.content_zh}</p>
+        </div>
       </article>)}</div>}
     </div>
   </section>;

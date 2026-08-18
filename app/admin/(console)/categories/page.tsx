@@ -23,7 +23,7 @@ export default async function AdminCategoriesPage({ searchParams }: { searchPara
 
     {query.error ? <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">操作失败，请检查中英文名称后重试。</p> : null}
 
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+    <div className="-mx-3 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm sm:mx-0">
       <div className="flex items-center justify-between border-b border-slate-200 px-4 py-4 sm:px-6"><div><h2 className="font-semibold">通用类别列表</h2><p className="mt-1 text-xs text-slate-500 sm:text-sm">一级类别 {roots.length} 个，二级类别 {categories.length - roots.length} 个</p></div><span className="text-sm text-slate-500">共 {categories.length} 项</span></div>
 
       <div className="hidden grid-cols-[minmax(220px,1fr)_minmax(180px,1fr)_100px] border-b border-slate-200 bg-slate-50 px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 sm:grid"><span>中文名称</span><span>英文名称</span><span className="text-right">层级</span></div>
