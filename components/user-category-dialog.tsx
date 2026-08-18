@@ -50,10 +50,13 @@ export function UserCategoryDialog({ category, roots = [], compact = false }: { 
           }
         }}>
           {category ? <input type="hidden" name="categoryId" value={category.id} /> : null}
-          <div className="grid gap-4 sm:grid-cols-2">
+          {language === "zh" ? <>
             <div className="space-y-2"><Label htmlFor={`user-name-zh-${category?.id ?? "new"}`}>{t("chineseName")}</Label><Input id={`user-name-zh-${category?.id ?? "new"}`} name="nameZh" className={`h-11 scroll-my-20 rounded-xl ${nameError ? "border-red-300 focus-visible:ring-red-300" : ""}`} maxLength={60} autoFocus defaultValue={category?.name_zh} onChange={() => setNameError(false)} placeholder="例如：餐饮" /></div>
-            <div className="space-y-2"><Label htmlFor={`user-name-en-${category?.id ?? "new"}`}>{t("englishName")}</Label><Input id={`user-name-en-${category?.id ?? "new"}`} name="nameEn" className={`h-11 scroll-my-20 rounded-xl ${nameError ? "border-red-300 focus-visible:ring-red-300" : ""}`} maxLength={60} defaultValue={category?.name_en} onChange={() => setNameError(false)} placeholder="e.g. Food" /></div>
-          </div>
+            {category ? <input type="hidden" name="nameEn" value={category.name_en} /> : null}
+          </> : <>
+            {category ? <input type="hidden" name="nameZh" value={category.name_zh} /> : null}
+            <div className="space-y-2"><Label htmlFor={`user-name-en-${category?.id ?? "new"}`}>{t("englishName")}</Label><Input id={`user-name-en-${category?.id ?? "new"}`} name="nameEn" className={`h-11 scroll-my-20 rounded-xl ${nameError ? "border-red-300 focus-visible:ring-red-300" : ""}`} maxLength={60} autoFocus defaultValue={category?.name_en} onChange={() => setNameError(false)} placeholder="e.g. Food" /></div>
+          </>}
           {nameError ? <p role="alert" className="text-sm font-medium text-red-600">{t("categoryNameRequired")}</p> : null}
           {!editing ? <div className="space-y-2"><Label htmlFor="user-parent-id">{t("parentCategory")}</Label><select id="user-parent-id" name="parentId" className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-emerald-500/30"><option value="">{t("createRootCategory")}</option>{roots.map((root) => <option key={root.id} value={root.id}>{getCategoryName(root, language)}</option>)}</select><p className="text-xs text-slate-500">{t("parentCategoryDescription")}</p></div> : null}
           <div className="flex gap-3 pt-1"><Button type="button" variant="outline" onClick={() => setOpen(false)} className="h-11 flex-1 rounded-xl">{t("cancel")}</Button><Button type="submit" className="h-11 flex-[1.5] rounded-xl bg-emerald-600 hover:bg-emerald-700">{editing ? t("saveChanges") : t("confirmAdd")}</Button></div>

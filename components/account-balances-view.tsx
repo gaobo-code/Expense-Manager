@@ -8,7 +8,6 @@ import { useLanguage } from "@/components/language-provider";
 import type { Category } from "@/lib/categories";
 
 const accountTypes: AccountType[] = ["credit_card", "cash", "bank"];
-const currencies: Currency[] = ["CNY", "USD"];
 const icons = { credit_card: CreditCard, cash: WalletCards, bank: Landmark };
 const cardStyles = {
   credit_card: "from-violet-50 to-white text-violet-700 ring-violet-100",
@@ -31,6 +30,7 @@ export function AccountBalancesView({ transactions, categories, hasError }: { tr
   const { language, formatDate, t } = useLanguage();
   const [selectedDate, setSelectedDate] = useState(todayInLocalTime);
   const zh = language === "zh";
+  const currencies: Currency[] = zh ? ["CNY", "USD"] : ["USD", "CNY"];
   const labels = zh
     ? { title: "账户余额", description: "查看指定日期结束时的各账户余额。", asOf: "余额日期", total: "合计余额", credit_card: "信用卡账户", cash: "现金", bank: "银行账户", unavailable: "暂时无法获取账户余额，请稍后重试。", note: "余额根据该日期及之前的交易计算" }
     : { title: "Account balances", description: "View each account balance at the end of a selected date.", asOf: "Balance date", total: "Total balance", credit_card: "Credit card", cash: "Cash", bank: "Bank account", unavailable: "Account balances are temporarily unavailable. Please try again.", note: "Balances include transactions on and before this date" };

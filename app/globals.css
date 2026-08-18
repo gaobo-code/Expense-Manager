@@ -59,6 +59,12 @@
 }
 
 @layer base {
+  @media (min-width: 640px) {
+    html {
+      scrollbar-gutter: stable;
+    }
+  }
+
   * {
     @apply border-border;
   }
