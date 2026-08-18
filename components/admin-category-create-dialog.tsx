@@ -6,11 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useAdminLanguage } from "@/components/admin-language-provider";
 
 type RootCategory = { id: number; name_zh: string; name_en: string };
 
 export function AdminCategoryCreateDialog({ roots }: { roots: RootCategory[] }) {
   const [open, setOpen] = useState(false);
+  const { t } = useAdminLanguage();
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -18,13 +20,13 @@ export function AdminCategoryCreateDialog({ roots }: { roots: RootCategory[] }) 
   }, [open]);
 
   return <>
-    <Button onClick={() => setOpen(true)} className="h-11 rounded-xl bg-emerald-600 px-5 shadow-sm hover:bg-emerald-700"><Plus />添加类别</Button>
+    <Button onClick={() => setOpen(true)} className="h-11 rounded-xl bg-emerald-600 px-5 shadow-sm hover:bg-emerald-700"><Plus />{t("addCategory")}</Button>
     {open ? <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-6">
       <button type="button" aria-label="关闭添加类别窗口" onClick={() => setOpen(false)} className="absolute inset-0 bg-slate-950/45 backdrop-blur-[2px]" />
       <div role="dialog" aria-modal="true" aria-labelledby="category-dialog-title" className="relative w-full rounded-t-3xl bg-white p-5 shadow-2xl sm:max-w-lg sm:rounded-2xl sm:p-7">
         <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-slate-200 sm:hidden" />
         <div className="mb-6 flex items-start justify-between gap-4">
-          <div><h2 id="category-dialog-title" className="text-xl font-bold">添加通用类别</h2><p className="mt-1 text-sm text-slate-500">中英文名称都会保存，显示时跟随系统语言。</p></div>
+          <div><h2 id="category-dialog-title" className="text-xl font-bold">{t("addCommonCategory")}</h2><p className="mt-1 text-sm text-slate-500">{t("addCategoryHint")}</p></div>
           <button type="button" aria-label="关闭" onClick={() => setOpen(false)} className="grid size-9 shrink-0 place-items-center rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200"><X size={18}/></button>
         </div>
         <form action={createCommonCategory} className="space-y-5">

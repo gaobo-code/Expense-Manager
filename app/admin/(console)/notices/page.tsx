@@ -1,5 +1,6 @@
 import { AdminNoticeCreateDialog } from "@/components/admin-notice-create-dialog";
 import { AdminNoticeActions } from "@/components/admin-notice-actions";
+import { AdminNoticeContent, AdminNoticeTitle } from "@/components/admin-notice-copy";
 import { requireAdmin } from "@/lib/admin";
 import type { Notice } from "@/lib/notices";
 import { BellRing, ImageIcon } from "lucide-react";
@@ -31,8 +32,8 @@ export default async function AdminNoticesPage({ searchParams }: { searchParams:
           {notice.thumbnail_data ? <img src={`data:${notice.thumbnail_mime};base64,${notice.thumbnail_data}`} alt="" className="h-full w-full object-cover" /> : <ImageIcon className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-slate-300" />}
         </div>
         <div className="min-w-0 flex-1 overflow-hidden p-2 sm:p-5">
-          <div className="flex items-center gap-2"><h3 className="min-w-0 flex-1 truncate font-bold text-slate-900">{notice.title_zh}</h3><AdminNoticeActions notice={notice}/></div>
-          <p className="mt-1 line-clamp-2 overflow-hidden whitespace-pre-wrap text-ellipsis text-sm leading-6 text-slate-600 sm:line-clamp-4">{notice.content_zh}</p>
+          <div className="flex items-center gap-2"><h3 className="min-w-0 flex-1 truncate font-bold text-slate-900"><AdminNoticeTitle zh={notice.title_zh} en={notice.title_en}/></h3><AdminNoticeActions notice={notice}/></div>
+          <p className="mt-1 line-clamp-2 overflow-hidden whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-sm leading-6 text-slate-600 sm:line-clamp-4"><AdminNoticeContent zh={notice.content_zh} en={notice.content_en}/></p>
         </div>
       </article>)}</div>}
     </div>

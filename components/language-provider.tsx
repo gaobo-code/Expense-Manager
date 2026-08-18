@@ -243,6 +243,7 @@ export function LanguageProvider({
     setLanguageState(nextLanguage);
     document.documentElement.lang = nextLanguage === "zh" ? "zh-CN" : "en";
     document.cookie = `preferred_language=${nextLanguage}; Path=/; Max-Age=31536000; SameSite=Lax`;
+    if (window.location.pathname.startsWith("/admin")) return;
     void saveLanguage(nextLanguage).catch(() => {
       setLanguageState(previousLanguage);
       document.documentElement.lang = previousLanguage === "zh" ? "zh-CN" : "en";
