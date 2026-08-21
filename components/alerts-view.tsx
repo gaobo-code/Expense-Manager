@@ -48,7 +48,7 @@ export function AlertsView({ notices, hasError }: { notices: Notice[]; hasError:
             </div>
           </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-2 md:gap-x-7 md:gap-y-4">
               {notices.map((notice) => {
                 const title = language === "zh" ? notice.title_zh : notice.title_en;
                 const content = language === "zh" ? notice.content_zh : notice.content_en;
@@ -57,7 +57,7 @@ export function AlertsView({ notices, hasError }: { notices: Notice[]; hasError:
                     key={notice.id}
                     type="button"
                     onClick={() => setSelectedNotice(notice)}
-                    className="flex w-full overflow-hidden rounded-2xl border border-slate-200 bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+                    className="flex w-full overflow-hidden rounded-lg border border-slate-200 bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
                   >
                     <div className="relative aspect-square w-32 shrink-0 self-start overflow-hidden bg-slate-100 sm:w-44">
                       {notice.thumbnail_data ? (
