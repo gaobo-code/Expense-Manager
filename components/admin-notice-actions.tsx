@@ -7,12 +7,14 @@ import { Label } from "@/components/ui/label";
 import type { Notice } from "@/lib/notices";
 import { ImagePlus, Pencil, Trash2, X } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 
 export function AdminNoticeActions({ notice }: { notice: Notice }) {
   const [open, setOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
+  const [updateState, updateAction, updatePending] = useActionState(updateNotice, { success: false });
+  const [deleteState, deleteAction, deletePending] = useActionState(deleteNotice, { success: false });
   const inputRef = useRef<HTMLInputElement>(null);
   const currentThumbnail = `data:${notice.thumbnail_mime};base64,${notice.thumbnail_data}`;
 
@@ -23,6 +25,16 @@ export function AdminNoticeActions({ notice }: { notice: Notice }) {
   }, [open, confirmDelete]);
 
   useEffect(() => () => { if (preview) URL.revokeObjectURL(preview); }, [preview]);
+
+  useEffect(() => {
+    if (!updateState.success) return;
+    setOpen(false);
+    setPreview((current) => { if (current) URL.revokeObjectURL(current); return null; });
+  }, [updateState]);
+
+  useEffect(() => {
+    if (deleteState.success) setConfirmDelete(false);
+  }, [deleteState]);
 
   function close() {
     setOpen(false);
@@ -43,10 +55,10 @@ export function AdminNoticeActions({ notice }: { notice: Notice }) {
       <button type="button" aria-label="取消删除" onClick={() => setConfirmDelete(false)} className="absolute inset-0 bg-slate-950/40" />
       <div role="alertdialog" aria-modal="true" aria-labelledby={`delete-notice-${notice.id}`} className="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
         <h2 id={`delete-notice-${notice.id}`} className="text-lg font-bold text-slate-950">删除这条提示？</h2>
-        <form action={deleteNotice} className="mt-6 flex justify-end gap-3">
+        <form action={deleteAction} className="mt-6 flex justify-end gap-3">
           <input type="hidden" name="noticeId" value={notice.id}/>
-          <Button type="button" variant="ghost" onClick={() => setConfirmDelete(false)} className="rounded-lg text-slate-600">取消</Button>
-          <Button type="submit" className="rounded-lg bg-red-600 px-5 text-white hover:bg-red-700">删除</Button>
+          <Button type="button" variant="ghost" disabled={deletePending} onClick={() => setConfirmDelete(false)} className="rounded-lg text-slate-600">取消</Button>
+          <Button type="submit" disabled={deletePending} className="rounded-lg bg-red-600 px-5 text-white hover:bg-red-700">删除</Button>
         </form>
       </div>
     </div> : null}
@@ -59,7 +71,7 @@ export function AdminNoticeActions({ notice }: { notice: Notice }) {
           <div><h2 id={`edit-notice-${notice.id}`} className="text-xl font-bold">修改提示</h2><p className="mt-1 text-sm text-slate-500">不选择新图片时将保留当前缩略图。</p></div>
           <button type="button" aria-label="关闭" onClick={close} className="grid size-9 shrink-0 place-items-center rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200"><X size={18}/></button>
         </div>
-        <form action={updateNotice} className="space-y-5">
+        <form action={updateAction} className="space-y-5">
           <input type="hidden" name="noticeId" value={notice.id}/>
           <div className="space-y-2"><Label htmlFor={`notice-title-zh-${notice.id}`}>中文标题</Label><Input id={`notice-title-zh-${notice.id}`} name="titleZh" required maxLength={120} autoFocus defaultValue={notice.title_zh} className="h-11 rounded-xl" /></div>
           <div className="space-y-2"><Label htmlFor={`notice-content-zh-${notice.id}`}>中文内容</Label><textarea id={`notice-content-zh-${notice.id}`} name="contentZh" required maxLength={5000} rows={4} defaultValue={notice.content_zh} className="w-full resize-y rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500/30" /></div>
@@ -74,7 +86,7 @@ export function AdminNoticeActions({ notice }: { notice: Notice }) {
             </button>
             <p className="text-xs text-slate-500">JPG、PNG、WebP 或 GIF，最大 2MB</p>
           </div>
-          <div className="flex gap-3 pt-1"><Button type="button" variant="outline" onClick={close} className="h-11 flex-1 rounded-xl">取消</Button><Button type="submit" className="h-11 flex-[1.5] rounded-xl bg-emerald-600 hover:bg-emerald-700">保存修改</Button></div>
+          <div className="flex gap-3 pt-1"><Button type="button" variant="outline" disabled={updatePending} onClick={close} className="h-11 flex-1 rounded-xl">取消</Button><Button type="submit" disabled={updatePending} className="h-11 flex-[1.5] rounded-xl bg-emerald-600 hover:bg-emerald-700">保存修改</Button></div>
         </form>
       </div>
     </div> : null}

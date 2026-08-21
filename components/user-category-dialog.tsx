@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { Pencil, Plus, X } from "lucide-react";
 import { createUserCategory, updateUserCategory } from "@/app/categories/actions";
 import { useLanguage } from "@/components/language-provider";
@@ -17,6 +17,8 @@ export function UserCategoryDialog({ category, roots = [], compact = false }: { 
   const [nameError, setNameError] = useState(false);
   const { language, t } = useLanguage();
   const editing = Boolean(category);
+  const [state, formAction, pending] = useActionState(editing ? updateUserCategory : createUserCategory, { success: false });
+  const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -24,6 +26,12 @@ export function UserCategoryDialog({ category, roots = [], compact = false }: { 
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = overflow; };
   }, [open]);
+
+  useEffect(() => {
+    if (!state.success) return;
+    setOpen(false);
+    if (!editing) formRef.current?.reset();
+  }, [editing, state]);
 
   return <>
     {editing ? (
@@ -40,7 +48,7 @@ export function UserCategoryDialog({ category, roots = [], compact = false }: { 
           <div><h2 id="user-category-title" className="text-xl font-bold">{editing ? t("editCategory") : t("addCategory")}</h2><p className="mt-1 text-sm text-slate-500">{t("categoryFormDescription")}</p></div>
           <button type="button" aria-label={t("close")} onClick={() => setOpen(false)} className="grid size-9 shrink-0 place-items-center rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200"><X size={18} /></button>
         </div>
-        <form action={editing ? updateUserCategory : createUserCategory} className="space-y-5" onSubmit={(event) => {
+        <form ref={formRef} action={formAction} className="space-y-5" onSubmit={(event) => {
           const formData = new FormData(event.currentTarget);
           const nameZh = String(formData.get("nameZh") ?? "").trim();
           const nameEn = String(formData.get("nameEn") ?? "").trim();
@@ -59,7 +67,7 @@ export function UserCategoryDialog({ category, roots = [], compact = false }: { 
           </>}
           {nameError ? <p role="alert" className="text-sm font-medium text-red-600">{t("categoryNameRequired")}</p> : null}
           {!editing ? <div className="space-y-2"><Label htmlFor="user-parent-id">{t("parentCategory")}</Label><select id="user-parent-id" name="parentId" className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-emerald-500/30"><option value="">{t("createRootCategory")}</option>{roots.map((root) => <option key={root.id} value={root.id}>{getCategoryName(root, language)}</option>)}</select><p className="text-xs text-slate-500">{t("parentCategoryDescription")}</p></div> : null}
-          <div className="flex gap-3 pt-1"><Button type="button" variant="outline" onClick={() => setOpen(false)} className="h-11 flex-1 rounded-xl">{t("cancel")}</Button><Button type="submit" className="h-11 flex-[1.5] rounded-xl bg-emerald-600 hover:bg-emerald-700">{editing ? t("saveChanges") : t("confirmAdd")}</Button></div>
+          <div className="flex gap-3 pt-1"><Button type="button" variant="outline" disabled={pending} onClick={() => setOpen(false)} className="h-11 flex-1 rounded-xl">{t("cancel")}</Button><Button type="submit" disabled={pending} className="h-11 flex-[1.5] rounded-xl bg-emerald-600 hover:bg-emerald-700">{editing ? t("saveChanges") : t("confirmAdd")}</Button></div>
         </form>
       </div>
     </div> : null}

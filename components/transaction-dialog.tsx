@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition, type ReactNode } from "react";
+import { useActionState, useEffect, useRef, useState, useTransition, type ReactNode } from "react";
 import { CalendarDays, ChevronLeft, ChevronRight, Eye, Pencil, Plus, X } from "lucide-react";
 import { createQuickCategory, createQuickCustomer, createTransaction, updateTransaction } from "@/app/actions";
 import { useLanguage } from "@/components/language-provider";
@@ -24,6 +24,8 @@ export function TransactionDialog({ transaction, categories, customers, trigger 
   const { language } = useLanguage();
   const zh = language === "zh";
   const editing = Boolean(transaction);
+  const [state, formAction, pending] = useActionState(editing ? updateTransaction : createTransaction, { success: false });
+  const formRef = useRef<HTMLFormElement>(null);
   const defaultCurrency = transaction?.currency ?? (zh ? "CNY" : "USD");
   const today = new Date().toLocaleDateString("en-CA");
   const l = zh ? {
@@ -33,20 +35,25 @@ export function TransactionDialog({ transaction, categories, customers, trigger 
   };
 
   useEffect(() => { if (!open) return; const old = document.body.style.overflow; document.body.style.overflow = "hidden"; return () => { document.body.style.overflow = old; }; }, [open]);
+  useEffect(() => {
+    if (!state.success) return;
+    setOpen(false);
+    if (!editing) formRef.current?.reset();
+  }, [editing, state]);
   const show = () => { setCategoryId(String(transaction?.category_id ?? "")); setCustomerId(String(transaction?.customer_id ?? "")); setOpen(true); };
 
   return <>
     {trigger ? <Button type="button" onClick={show} className="h-11 rounded-xl bg-emerald-600 px-5 shadow-sm hover:bg-emerald-700">{trigger}</Button> : <Button type="button" variant="ghost" size="icon" onClick={show} className="size-8 rounded-lg text-slate-500 hover:bg-emerald-50 hover:text-emerald-700 md:size-9" aria-label={l.detail}><Eye className="md:hidden" size={15}/><Pencil className="hidden md:block" size={15}/></Button>}
     {open ? <div className="fixed inset-0 z-50 flex items-end justify-center text-left font-sans text-slate-950 sm:items-center sm:p-6"><button type="button" aria-label={l.close} onClick={() => setOpen(false)} className="absolute inset-0 bg-slate-950/45 backdrop-blur-[2px]"/><div role="dialog" aria-modal="true" aria-labelledby="transaction-title" className="relative max-h-[92vh] w-full overflow-y-auto rounded-t-3xl bg-white p-5 shadow-2xl sm:max-w-2xl sm:rounded-2xl sm:p-7">
       <div className="mb-6 flex items-start justify-between gap-4"><div><h2 id="transaction-title" className="text-xl font-bold">{editing ? l.edit : l.add}</h2><p className="mt-1 text-sm text-slate-500">{l.hint}</p></div><button type="button" aria-label={l.close} onClick={() => setOpen(false)} className="grid size-9 shrink-0 place-items-center rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200"><X size={18}/></button></div>
-      <form action={editing ? updateTransaction : createTransaction} className="space-y-5">
+      <form ref={formRef} action={formAction} className="space-y-5">
         {transaction ? <input type="hidden" name="transactionId" value={transaction.id}/> : null}
         <Field label={`${l.date} *`}><DatePicker name="date" defaultValue={transaction?.transaction_date ?? today} language={language}/></Field>
         <Field label={`${l.category} *`}><div className="flex gap-2"><select name="categoryId" required value={categoryId} onChange={(event) => setCategoryId(event.target.value)} className={selectClass}><option value="" disabled>{l.chooseCategory}</option>{localCategories.map((category) => <option key={category.id} value={category.id}>{getCategoryName(category, language)}</option>)}</select><Button type="button" variant="outline" onClick={() => setQuickKind("category")} className="h-11 shrink-0 rounded-xl px-3"><Plus size={16}/><span className="hidden sm:inline">{l.addCategory}</span></Button></div></Field>
         <div className="grid gap-4 sm:grid-cols-2"><Field label={`${l.account} *`}><select name="accountType" required defaultValue={transaction?.account_type ?? "cash"} className={selectClass}><option value="credit_card">{l.credit}</option><option value="cash">{l.cash}</option><option value="bank">{l.bank}</option></select></Field><Field label={`${l.currency} *`}><select name="currency" required defaultValue={defaultCurrency} className={selectClass}><option value="CNY">CNY · 人民币</option><option value="USD">USD · 美元</option></select></Field></div>
         <Field label={`${l.amount} *`}><Input type="number" name="amount" required min="0" max="9999999999.99" step="0.01" inputMode="decimal" defaultValue={transaction?.amount} placeholder="0.00" className="h-12 rounded-xl text-lg font-semibold tabular-nums"/></Field>
         <Field label={l.customer}><div className="flex gap-2"><select name="customerId" value={customerId} onChange={(event) => setCustomerId(event.target.value)} className={selectClass}><option value="">{l.noCustomer}</option>{localCustomers.map((customer) => <option key={customer.id} value={customer.id}>{customer.name}</option>)}</select><Button type="button" variant="outline" onClick={() => setQuickKind("customer")} className="h-11 shrink-0 rounded-xl px-3"><Plus size={16}/><span className="hidden sm:inline">{l.addCustomer}</span></Button></div></Field>
-        <div className="flex gap-3 pt-2"><Button type="button" variant="outline" onClick={() => setOpen(false)} className="h-11 flex-1 rounded-xl">{l.cancel}</Button><Button type="submit" className="h-11 flex-[1.5] rounded-xl bg-emerald-600 hover:bg-emerald-700">{editing ? l.save : l.create}</Button></div>
+        <div className="flex gap-3 pt-2"><Button type="button" variant="outline" disabled={pending} onClick={() => setOpen(false)} className="h-11 flex-1 rounded-xl">{l.cancel}</Button><Button type="submit" disabled={pending} className="h-11 flex-[1.5] rounded-xl bg-emerald-600 hover:bg-emerald-700">{editing ? l.save : l.create}</Button></div>
       </form>
     </div></div> : null}
     {quickKind ? <QuickCreateDialog kind={quickKind} labels={l} roots={localCategories.filter((item) => item.parent_id === null)} language={language} onClose={() => setQuickKind(null)} onCreated={(item) => {

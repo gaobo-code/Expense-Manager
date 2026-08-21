@@ -8,7 +8,7 @@ function readName(formData: FormData, key: "nameZh" | "nameEn") {
   return String(formData.get(key) ?? "").trim();
 }
 
-export async function createUserCategory(formData: FormData) {
+export async function createUserCategory(_previousState: { success: boolean }, formData: FormData) {
   const nameZh = readName(formData, "nameZh");
   const nameEn = readName(formData, "nameEn");
   const parentValue = String(formData.get("parentId") ?? "").trim();
@@ -44,10 +44,10 @@ export async function createUserCategory(formData: FormData) {
   if (error) redirect("/categories?error=create");
 
   revalidatePath("/categories");
-  redirect("/categories");
+  return { success: true };
 }
 
-export async function updateUserCategory(formData: FormData) {
+export async function updateUserCategory(_previousState: { success: boolean }, formData: FormData) {
   const categoryId = Number(String(formData.get("categoryId") ?? "").trim());
   const nameZh = readName(formData, "nameZh");
   const nameEn = readName(formData, "nameEn");
@@ -70,5 +70,5 @@ export async function updateUserCategory(formData: FormData) {
   if (error || !data) redirect("/categories?error=update");
 
   revalidatePath("/categories");
-  redirect("/categories");
+  return { success: true };
 }

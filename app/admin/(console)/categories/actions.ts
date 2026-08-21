@@ -2,7 +2,7 @@
 import { requireAdmin } from "@/lib/admin";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-export async function createCommonCategory(formData: FormData) {
+export async function createCommonCategory(_previousState: { success: boolean }, formData: FormData) {
   const nameZh = String(formData.get("nameZh") ?? "").trim();
   const nameEn = String(formData.get("nameEn") ?? "").trim();
   const parentValue = String(formData.get("parentId") ?? "").trim();
@@ -13,10 +13,10 @@ export async function createCommonCategory(formData: FormData) {
   const { error } = await supabase.rpc("admin_create_category", { session_token_hash: tokenHash, category_name_zh: nameZh, category_name_en: nameEn, category_parent_id: parentId });
   if (error) redirect("/admin/categories?error=create");
   revalidatePath("/admin/categories");
-  redirect("/admin/categories");
+  return { success: true };
 }
 
-export async function updateCommonCategory(formData: FormData) {
+export async function updateCommonCategory(_previousState: { success: boolean }, formData: FormData) {
   const categoryId = Number(String(formData.get("categoryId") ?? "").trim());
   const nameZh = String(formData.get("nameZh") ?? "").trim();
   const nameEn = String(formData.get("nameEn") ?? "").trim();
@@ -34,5 +34,5 @@ export async function updateCommonCategory(formData: FormData) {
 
   if (error) redirect("/admin/categories?error=update");
   revalidatePath("/admin/categories");
-  redirect("/admin/categories");
+  return { success: true };
 }

@@ -8,7 +8,7 @@ function readName(formData: FormData) {
   return String(formData.get("name") ?? "").trim();
 }
 
-export async function createCustomer(formData: FormData) {
+export async function createCustomer(_previousState: { success: boolean }, formData: FormData) {
   const name = readName(formData);
   if (!name || name.length > 100) redirect("/customers?error=invalid");
 
@@ -26,10 +26,10 @@ export async function createCustomer(formData: FormData) {
   if (error?.code === "23505") redirect("/customers?error=duplicate");
   if (error) redirect("/customers?error=create");
   revalidatePath("/customers");
-  redirect("/customers");
+  return { success: true };
 }
 
-export async function updateCustomer(formData: FormData) {
+export async function updateCustomer(_previousState: { success: boolean }, formData: FormData) {
   const id = Number(String(formData.get("customerId") ?? ""));
   const name = readName(formData);
   if (!Number.isSafeInteger(id) || id <= 0 || !name || name.length > 100) redirect("/customers?error=invalid");
@@ -50,5 +50,5 @@ export async function updateCustomer(formData: FormData) {
   if (error?.code === "23505") redirect("/customers?error=duplicate");
   if (error || !data) redirect("/customers?error=update");
   revalidatePath("/customers");
-  redirect("/customers");
+  return { success: true };
 }

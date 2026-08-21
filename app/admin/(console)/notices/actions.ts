@@ -41,7 +41,7 @@ export async function createNotice(_previousState: { success: boolean }, formDat
   return { success: true };
 }
 
-export async function updateNotice(formData: FormData) {
+export async function updateNotice(_previousState: { success: boolean }, formData: FormData) {
   const noticeId = readNoticeId(formData);
   const titleZh = String(formData.get("titleZh") ?? "").trim();
   const contentZh = String(formData.get("contentZh") ?? "").trim();
@@ -68,10 +68,10 @@ export async function updateNotice(formData: FormData) {
 
   if (error) redirect("/admin/notices?error=update");
   revalidatePath("/admin/notices");
-  redirect("/admin/notices?updated=1");
+  return { success: true };
 }
 
-export async function deleteNotice(formData: FormData) {
+export async function deleteNotice(_previousState: { success: boolean }, formData: FormData) {
   const noticeId = readNoticeId(formData);
   if (noticeId === null) redirect("/admin/notices?error=delete");
 
@@ -79,5 +79,5 @@ export async function deleteNotice(formData: FormData) {
   const { error } = await supabase.rpc("admin_delete_notice", { session_token_hash: tokenHash, notice_id: noticeId });
   if (error) redirect("/admin/notices?error=delete");
   revalidatePath("/admin/notices");
-  redirect("/admin/notices");
+  return { success: true };
 }

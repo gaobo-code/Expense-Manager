@@ -101,7 +101,7 @@ async function transactionValues(formData: FormData) {
   return { date, amount, accountType, currency };
 }
 
-export async function createTransaction(formData: FormData) {
+export async function createTransaction(_previousState: { success: boolean }, formData: FormData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login?next=/");
@@ -114,10 +114,10 @@ export async function createTransaction(formData: FormData) {
   });
   if (error) fail("create");
   revalidatePath("/");
-  redirect("/");
+  return { success: true };
 }
 
-export async function updateTransaction(formData: FormData) {
+export async function updateTransaction(_previousState: { success: boolean }, formData: FormData) {
   const id = Number(String(formData.get("transactionId") ?? ""));
   if (!Number.isSafeInteger(id) || id <= 0) fail("invalid");
   const supabase = await createClient();
@@ -132,5 +132,5 @@ export async function updateTransaction(formData: FormData) {
   }).eq("id", id).eq("user_id", user.id).select("id").maybeSingle();
   if (error || !data) fail("update");
   revalidatePath("/");
-  redirect("/");
+  return { success: true };
 }
