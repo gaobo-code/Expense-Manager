@@ -6,6 +6,7 @@ import { LanguageProvider } from "@/components/language-provider";
 import type { DateFormat, Language } from "@/components/language-provider";
 import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
+import { RequestTransition } from "@/components/request-transition";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -70,6 +71,7 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <LanguageProvider initialLanguage={language} initialDateFormat={dateFormat}>
+            <RequestTransition />
             {children}
           </LanguageProvider>
         </ThemeProvider>

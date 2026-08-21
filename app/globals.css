@@ -72,3 +72,86 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .request-transition {
+    pointer-events: auto;
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    visibility: hidden;
+  }
+
+  .request-transition[data-visible="true"] {
+    visibility: visible;
+  }
+
+  .request-transition__bar {
+    position: absolute;
+    inset: 0 0 auto;
+    height: 3px;
+    overflow: hidden;
+    background: rgb(16 185 129 / 18%);
+    box-shadow: 0 1px 8px rgb(16 185 129 / 25%);
+  }
+
+  .request-transition__bar::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    width: 42%;
+    border-radius: 9999px;
+    background: linear-gradient(90deg, transparent, rgb(16 185 129), rgb(52 211 153), transparent);
+    animation: request-progress 1.05s ease-in-out infinite;
+  }
+
+  .request-transition__veil {
+    position: absolute;
+    inset: 3px 0 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    background: hsl(var(--background) / 72%);
+    color: hsl(var(--foreground));
+    font-size: 0.875rem;
+    font-weight: 600;
+    opacity: 0;
+    animation: request-veil-in 180ms ease-out forwards;
+    backdrop-filter: blur(2px);
+  }
+
+  .request-transition__loader {
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 3px solid rgb(16 185 129 / 22%);
+    border-top-color: rgb(5 150 105);
+    border-radius: 9999px;
+    animation: request-spin 700ms linear infinite;
+  }
+
+  @keyframes request-progress {
+    from { transform: translateX(-110%); }
+    to { transform: translateX(345%); }
+  }
+
+  @keyframes request-veil-in {
+    to { opacity: 1; }
+  }
+
+  @keyframes request-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .request-transition__bar::after,
+    .request-transition__veil,
+    .request-transition__loader {
+      animation: none;
+    }
+
+    .request-transition__bar::after { transform: none; }
+    .request-transition__veil { opacity: 1; backdrop-filter: none; }
+  }
+}
