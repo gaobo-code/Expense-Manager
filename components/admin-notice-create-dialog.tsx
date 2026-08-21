@@ -6,11 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ImagePlus, Plus, X } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 
 export function AdminNoticeCreateDialog() {
   const [open, setOpen] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
+  const [state, formAction, pending] = useActionState(createNotice, { success: false });
+  const formRef = useRef<HTMLFormElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -19,6 +21,13 @@ export function AdminNoticeCreateDialog() {
   }, [open]);
 
   useEffect(() => () => { if (preview) URL.revokeObjectURL(preview); }, [preview]);
+
+  useEffect(() => {
+    if (!state.success) return;
+    setOpen(false);
+    formRef.current?.reset();
+    setPreview((current) => { if (current) URL.revokeObjectURL(current); return null; });
+  }, [state]);
 
   function close() {
     setOpen(false);
@@ -39,7 +48,7 @@ export function AdminNoticeCreateDialog() {
           <div><h2 id="notice-dialog-title" className="text-xl font-bold">添加提示</h2><p className="mt-1 text-sm text-slate-500">填写中英文内容并上传一张缩略图。</p></div>
           <button type="button" aria-label="关闭" onClick={close} className="grid size-9 shrink-0 place-items-center rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200"><X size={18}/></button>
         </div>
-        <form action={createNotice} className="space-y-5">
+        <form ref={formRef} action={formAction} className="space-y-5">
           <div className="space-y-2"><Label htmlFor="notice-title-zh">中文标题</Label><Input id="notice-title-zh" name="titleZh" required maxLength={120} autoFocus className="h-11 rounded-xl" placeholder="请输入中文标题" /></div>
           <div className="space-y-2"><Label htmlFor="notice-content-zh">中文内容</Label><textarea id="notice-content-zh" name="contentZh" required maxLength={5000} rows={4} className="w-full resize-y rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none placeholder:text-slate-400 focus:ring-2 focus:ring-emerald-500/30" placeholder="请输入中文内容" /></div>
           <div className="space-y-2"><Label htmlFor="notice-title-en">英文标题</Label><Input id="notice-title-en" name="titleEn" required maxLength={120} className="h-11 rounded-xl" placeholder="Enter the English title" /></div>
@@ -51,7 +60,7 @@ export function AdminNoticeCreateDialog() {
               {preview ? <Image src={preview} alt="缩略图预览" fill unoptimized className="object-cover" /> : <span className="flex flex-col items-center gap-2 text-sm"><ImagePlus size={28}/><span>点击选择图片</span><span className="text-xs text-slate-400">JPG、PNG、WebP 或 GIF，最大 2MB</span></span>}
             </button>
           </div>
-          <div className="flex gap-3 pt-1"><Button type="button" variant="outline" onClick={close} className="h-11 flex-1 rounded-xl">取消</Button><Button type="submit" className="h-11 flex-[1.5] rounded-xl bg-emerald-600 hover:bg-emerald-700">确认添加</Button></div>
+          <div className="flex gap-3 pt-1"><Button type="button" variant="outline" disabled={pending} onClick={close} className="h-11 flex-1 rounded-xl">取消</Button><Button type="submit" disabled={pending} className="h-11 flex-[1.5] rounded-xl bg-emerald-600 hover:bg-emerald-700">确认添加</Button></div>
         </form>
       </div>
     </div> : null}

@@ -12,7 +12,7 @@ function readNoticeId(formData: FormData) {
   return Number.isSafeInteger(noticeId) && noticeId > 0 ? noticeId : null;
 }
 
-export async function createNotice(formData: FormData) {
+export async function createNotice(_previousState: { success: boolean }, formData: FormData) {
   const titleZh = String(formData.get("titleZh") ?? "").trim();
   const contentZh = String(formData.get("contentZh") ?? "").trim();
   const titleEn = String(formData.get("titleEn") ?? "").trim();
@@ -38,7 +38,7 @@ export async function createNotice(formData: FormData) {
 
   if (error) redirect("/admin/notices?error=create");
   revalidatePath("/admin/notices");
-  redirect("/admin/notices?created=1");
+  return { success: true };
 }
 
 export async function updateNotice(formData: FormData) {
