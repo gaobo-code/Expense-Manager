@@ -6,11 +6,13 @@ export async function createCommonCategory(_previousState: { success: boolean },
   const nameZh = String(formData.get("nameZh") ?? "").trim();
   const nameEn = String(formData.get("nameEn") ?? "").trim();
   const parentValue = String(formData.get("parentId") ?? "").trim();
+  const amountEffect = String(formData.get("amountEffect") ?? "");
   if (!nameZh || !nameEn || nameZh.length > 60 || nameEn.length > 60) redirect("/admin/categories?error=invalid");
   const parentId = parentValue ? Number(parentValue) : null;
   if (parentId !== null && (!Number.isSafeInteger(parentId) || parentId <= 0)) redirect("/admin/categories?error=parent");
+  if (amountEffect !== "increase" && amountEffect !== "decrease") redirect("/admin/categories?error=invalid");
   const { supabase, tokenHash } = await requireAdmin();
-  const { error } = await supabase.rpc("admin_create_category", { session_token_hash: tokenHash, category_name_zh: nameZh, category_name_en: nameEn, category_parent_id: parentId });
+  const { error } = await supabase.rpc("admin_create_category", { session_token_hash: tokenHash, category_name_zh: nameZh, category_name_en: nameEn, category_parent_id: parentId, category_amount_effect: amountEffect });
   if (error) redirect("/admin/categories?error=create");
   revalidatePath("/admin/categories");
   return { success: true };

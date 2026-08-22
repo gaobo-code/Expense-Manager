@@ -13,6 +13,7 @@ export async function createUserCategory(_previousState: { success: boolean }, f
   const nameEn = readName(formData, "nameEn");
   const parentValue = String(formData.get("parentId") ?? "").trim();
   const parentId = parentValue ? Number(parentValue) : null;
+  const amountEffect = String(formData.get("amountEffect") ?? "");
 
   if ((!nameZh && !nameEn) || nameZh.length > 60 || nameEn.length > 60) {
     redirect("/categories?error=invalid");
@@ -20,6 +21,7 @@ export async function createUserCategory(_previousState: { success: boolean }, f
   if (parentId !== null && (!Number.isSafeInteger(parentId) || parentId <= 0)) {
     redirect("/categories?error=parent");
   }
+  if (amountEffect !== "increase" && amountEffect !== "decrease") redirect("/categories?error=invalid");
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -28,22 +30,36 @@ export async function createUserCategory(_previousState: { success: boolean }, f
   if (parentId !== null) {
     const { data: parent } = await supabase
       .from("categories")
-      .select("id, user_id")
+      .select("id, user_id, amount_effect")
       .eq("id", parentId)
       .is("parent_id", null)
       .maybeSingle();
     if (!parent || (parent.user_id !== null && parent.user_id !== user.id)) redirect("/categories?error=parent");
   }
 
-  const { error } = await supabase.from("categories").insert({
+  const { data: createdCategory, error } = await supabase.from("categories").insert({
     name_zh: nameZh,
     name_en: nameEn,
     parent_id: parentId,
     user_id: user.id,
-  });
-  if (error) redirect("/categories?error=create");
+    amount_effect: amountEffect,
+  }).select("id").single();
+  if (error || !createdCategory) redirect("/categories?error=create");
+
+  // Older databases may still have a trigger that copies amount_effect from
+  // the parent during INSERT. Updating only amount_effect does not invoke that
+  // trigger, so the user's explicit choice remains authoritative.
+  const { data: savedCategory, error: amountEffectError } = await supabase
+    .from("categories")
+    .update({ amount_effect: amountEffect, updated_at: new Date().toISOString() })
+    .eq("id", createdCategory.id)
+    .eq("user_id", user.id)
+    .select("id")
+    .maybeSingle();
+  if (amountEffectError || !savedCategory) redirect("/categories?error=create");
 
   revalidatePath("/categories");
+  revalidatePath("/");
   return { success: true };
 }
 
@@ -70,5 +86,6 @@ export async function updateUserCategory(_previousState: { success: boolean }, f
   if (error || !data) redirect("/categories?error=update");
 
   revalidatePath("/categories");
+  revalidatePath("/");
   return { success: true };
 }

@@ -30,15 +30,8 @@ export function TransactionsView({ transactions, categories, customers, hasError
   const monthlyNets = useMemo(() => {
     const result = new Map<string, Record<Currency, number>>();
     const isIncome = (transaction: Transaction) => {
-      let category = transaction.category_id ? categoryMap.get(transaction.category_id) : undefined;
-      const visited = new Set<number>();
-      while (category?.parent_id && !visited.has(category.id)) {
-        visited.add(category.id);
-        category = categoryMap.get(category.parent_id) ?? category;
-        if (!category.parent_id) break;
-      }
-      const names = category ? `${category.name_zh} ${category.name_en}` : transaction.category;
-      return /收入|(^|\s)income(\s|$)/i.test(names.trim());
+      const category = transaction.category_id ? categoryMap.get(transaction.category_id) : undefined;
+      return category?.amount_effect === "increase";
     };
 
     transactions.forEach((transaction) => {

@@ -35,6 +35,7 @@ export function TransactionDialog({ transaction, categories, customers, trigger 
   };
 
   useEffect(() => { if (!open) return; const old = document.body.style.overflow; document.body.style.overflow = "hidden"; return () => { document.body.style.overflow = old; }; }, [open]);
+  useEffect(() => { setLocalCategories(categories); }, [categories]);
   useEffect(() => {
     if (!state.success) return;
     setOpen(false);
@@ -57,14 +58,14 @@ export function TransactionDialog({ transaction, categories, customers, trigger 
       </form>
     </div></div> : null}
     {quickKind ? <QuickCreateDialog kind={quickKind} labels={l} roots={localCategories.filter((item) => item.parent_id === null)} language={language} onClose={() => setQuickKind(null)} onCreated={(item) => {
-      if (quickKind === "category") { setLocalCategories((items) => [...items, { id: item.id, parent_id: item.parentId ?? null, user_id: "local", name_zh: item.nameZh ?? "", name_en: item.nameEn ?? "", sort_order: 0, created_at: "", updated_at: "" }]); setCategoryId(String(item.id)); }
+      if (quickKind === "category") { setLocalCategories((items) => [...items, { id: item.id, parent_id: item.parentId ?? null, user_id: "local", name_zh: item.nameZh ?? "", name_en: item.nameEn ?? "", amount_effect: item.amountEffect ?? "decrease", sort_order: 0, created_at: "", updated_at: "" }]); setCategoryId(String(item.id)); }
       else { setLocalCustomers((items) => [...items, { id: item.id, user_id: "local", name: item.name, created_at: "", updated_at: "" }]); setCustomerId(String(item.id)); }
       setQuickKind(null);
     }}/> : null}
   </>;
 }
 
-function QuickCreateDialog({ kind, labels, roots, language, onClose, onCreated }: { kind: QuickKind; labels: Record<string, string>; roots: Category[]; language: "zh" | "en"; onClose: () => void; onCreated: (item: { id: number; name: string; nameZh?: string; nameEn?: string; parentId?: number | null }) => void }) {
+function QuickCreateDialog({ kind, labels, roots, language, onClose, onCreated }: { kind: QuickKind; labels: Record<string, string>; roots: Category[]; language: "zh" | "en"; onClose: () => void; onCreated: (item: { id: number; name: string; nameZh?: string; nameEn?: string; parentId?: number | null; amountEffect?: "increase" | "decrease" }) => void }) {
   const [name, setName] = useState("");
   const [nameZh, setNameZh] = useState("");
   const [nameEn, setNameEn] = useState("");

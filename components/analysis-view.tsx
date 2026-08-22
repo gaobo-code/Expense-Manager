@@ -36,10 +36,8 @@ export function AnalysisView({ transactions, categories, hasError }: { transacti
       { key: "currentYear", label: labels.currentYear, income: 0, expense: 0, net: 0 },
     ];
     const isIncome = (transaction: Transaction) => {
-      let category = transaction.category_id ? categoryMap.get(transaction.category_id) : undefined;
-      const visited = new Set<number>();
-      while (category?.parent_id && !visited.has(category.id)) { visited.add(category.id); category = categoryMap.get(category.parent_id) ?? category; }
-      return /收入|(^|\s)income(\s|$)/i.test((category ? `${category.name_zh} ${category.name_en}` : transaction.category).trim());
+      const category = transaction.category_id ? categoryMap.get(transaction.category_id) : undefined;
+      return category?.amount_effect === "increase";
     };
     for (const transaction of transactions) {
       if (transaction.currency !== currency) continue;
@@ -48,7 +46,10 @@ export function AnalysisView({ transactions, categories, hasError }: { transacti
       if (date >= currentMonthStart && date < nextMonthStart) targets.push(result[0]);
       if (date >= previousMonthStart && date < currentMonthStart) targets.push(result[1]);
       if (date >= `${year}-01-01` && date < `${year + 1}-01-01`) targets.push(result[2]);
-      for (const target of targets) isIncome(transaction) ? target.income += transaction.amount : target.expense += transaction.amount;
+      for (const target of targets) {
+        if (isIncome(transaction)) target.income += transaction.amount;
+        else target.expense += transaction.amount;
+      }
     }
     result.forEach((period) => { period.net = period.income - period.expense; });
     return result;

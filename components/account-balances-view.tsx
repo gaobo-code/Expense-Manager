@@ -39,14 +39,8 @@ export function AccountBalancesView({ transactions, categories, hasError }: { tr
   const balances = useMemo(() => {
     const result = Object.fromEntries(accountTypes.map((type) => [type, { CNY: 0, USD: 0 }])) as Record<AccountType, Record<Currency, number>>;
     const isIncome = (transaction: Transaction) => {
-      let category = transaction.category_id ? categoryMap.get(transaction.category_id) : undefined;
-      const visited = new Set<number>();
-      while (category?.parent_id && !visited.has(category.id)) {
-        visited.add(category.id);
-        category = categoryMap.get(category.parent_id) ?? category;
-      }
-      const names = category ? `${category.name_zh} ${category.name_en}` : transaction.category;
-      return /收入|(^|\s)income(\s|$)/i.test(names.trim());
+      const category = transaction.category_id ? categoryMap.get(transaction.category_id) : undefined;
+      return category?.amount_effect === "increase";
     };
     for (const transaction of transactions) {
       if (transaction.transaction_date <= selectedDate) result[transaction.account_type][transaction.currency] += transaction.amount * (isIncome(transaction) ? 1 : -1);

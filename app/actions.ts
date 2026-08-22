@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 const accountTypes = new Set(["credit_card", "cash", "bank"]);
 const currencies = new Set(["USD", "CNY"]);
 
-export type QuickCreateResult = { ok: true; id: number; name: string; nameZh?: string; nameEn?: string; parentId?: number | null } | { ok: false; message: string };
+export type QuickCreateResult = { ok: true; id: number; name: string; nameZh?: string; nameEn?: string; parentId?: number | null; amountEffect?: "increase" | "decrease" } | { ok: false; message: string };
 
 function fail(code: string): never {
   return redirect(`/?error=${code}`);
@@ -26,17 +26,19 @@ export async function createQuickCategory(nameZhValue: string, nameEnValue: stri
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { ok: false, message: "unauthorized" };
+  let amountEffect: "increase" | "decrease" = "decrease";
   if (parentId !== null) {
-    const { data: parent } = await supabase.from("categories").select("id, user_id").eq("id", parentId).is("parent_id", null).maybeSingle();
+    const { data: parent } = await supabase.from("categories").select("id, user_id, amount_effect").eq("id", parentId).is("parent_id", null).maybeSingle();
     if (!parent || (parent.user_id !== null && parent.user_id !== user.id)) return { ok: false, message: "parent" };
+    amountEffect = parent.amount_effect as "increase" | "decrease";
   }
   const { data, error } = await supabase.from("categories").insert({
-    user_id: user.id, parent_id: parentId, name_zh: nameZh, name_en: nameEn,
+    user_id: user.id, parent_id: parentId, name_zh: nameZh, name_en: nameEn, amount_effect: amountEffect,
   }).select("id").single();
   if (error || !data) return { ok: false, message: "create" };
   revalidatePath("/");
   revalidatePath("/categories");
-  return { ok: true, id: data.id, name: nameZh || nameEn, nameZh, nameEn, parentId };
+  return { ok: true, id: data.id, name: nameZh || nameEn, nameZh, nameEn, parentId, amountEffect };
 }
 
 export async function createQuickCustomer(nameValue: string): Promise<QuickCreateResult> {

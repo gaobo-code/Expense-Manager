@@ -11,7 +11,7 @@ export default async function AccountsPage() {
   const supabase = await createClient();
   const [transactionsResult, categoriesResult] = await Promise.all([
     supabase.from("transactions").select("id, transaction_date, amount, category, category_id, account_type, currency, customer_id").order("transaction_date", { ascending: true }),
-    supabase.from("categories").select("id, parent_id, user_id, name_zh, name_en, sort_order, created_at, updated_at").order("created_at", { ascending: true }),
+    supabase.from("categories").select("id, parent_id, user_id, name_zh, name_en, amount_effect, sort_order, created_at, updated_at").order("created_at", { ascending: true }),
   ]);
 
   return (
