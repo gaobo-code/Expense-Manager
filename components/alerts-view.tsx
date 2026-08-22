@@ -57,7 +57,7 @@ export function AlertsView({ notices, hasError }: { notices: Notice[]; hasError:
                     key={notice.id}
                     type="button"
                     onClick={() => setSelectedNotice(notice)}
-                    className="flex w-full overflow-hidden rounded-lg border border-slate-200 bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+                    className="group flex w-full overflow-hidden rounded-lg border border-slate-200 bg-white text-left shadow-sm transition-colors duration-200 hover:border-emerald-300 hover:bg-emerald-50/60 active:bg-emerald-100/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
                   >
                     <div className="relative aspect-square w-32 shrink-0 self-start overflow-hidden bg-slate-100 sm:w-44">
                       {notice.thumbnail_data ? (
@@ -67,7 +67,7 @@ export function AlertsView({ notices, hasError }: { notices: Notice[]; hasError:
                       )}
                     </div>
                     <div className="min-w-0 flex-1 p-4 sm:p-5">
-                      <h2 className="line-clamp-2 break-words font-bold text-slate-900">{title}</h2>
+                      <h2 className="line-clamp-2 break-words font-bold text-slate-900 transition-colors duration-200 group-hover:text-emerald-800">{title}</h2>
                       <p className="mt-1 line-clamp-3 break-words whitespace-pre-wrap text-sm leading-6 text-slate-600">{content}</p>
                     </div>
                   </button>
