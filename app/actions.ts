@@ -136,3 +136,23 @@ export async function updateTransaction(_previousState: { success: boolean }, fo
   revalidatePath("/");
   return { success: true };
 }
+
+export type DeleteTransactionState = { success: boolean; error: "failed" | null };
+
+export async function deleteTransaction(_previousState: DeleteTransactionState, formData: FormData): Promise<DeleteTransactionState> {
+  const id = Number(String(formData.get("transactionId") ?? ""));
+  if (!Number.isSafeInteger(id) || id <= 0) return { success: false, error: "failed" };
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/auth/login?next=/");
+
+  const { data, error } = await supabase.from("transactions")
+    .delete().eq("id", id).eq("user_id", user.id).select("id").maybeSingle();
+  if (error || !data) return { success: false, error: "failed" };
+
+  revalidatePath("/");
+  revalidatePath("/accounts");
+  revalidatePath("/analysis");
+  return { success: true, error: null };
+}

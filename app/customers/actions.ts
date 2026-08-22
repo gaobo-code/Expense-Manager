@@ -52,3 +52,31 @@ export async function updateCustomer(_previousState: { success: boolean }, formD
   revalidatePath("/customers");
   return { success: true };
 }
+
+export type DeleteCustomerState = { success: boolean; error: "in-use" | "failed" | null };
+
+export async function deleteCustomer(_previousState: DeleteCustomerState, formData: FormData): Promise<DeleteCustomerState> {
+  const id = Number(String(formData.get("customerId") ?? ""));
+  if (!Number.isSafeInteger(id) || id <= 0) return { success: false, error: "failed" };
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/auth/login?next=/customers");
+
+  const { data: customer, error: customerError } = await supabase.from("customers")
+    .select("id").eq("id", id).eq("user_id", user.id).maybeSingle();
+  if (customerError || !customer) return { success: false, error: "failed" };
+
+  const { data: transaction, error: transactionError } = await supabase.from("transactions")
+    .select("id").eq("customer_id", id).limit(1).maybeSingle();
+  if (transactionError) return { success: false, error: "failed" };
+  if (transaction) return { success: false, error: "in-use" };
+
+  const { data: deletedCustomer, error: deleteError } = await supabase.from("customers")
+    .delete().eq("id", id).eq("user_id", user.id).select("id").maybeSingle();
+  if (deleteError || !deletedCustomer) return { success: false, error: "failed" };
+
+  revalidatePath("/customers");
+  revalidatePath("/");
+  return { success: true, error: null };
+}

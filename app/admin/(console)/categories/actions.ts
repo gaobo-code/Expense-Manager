@@ -38,3 +38,22 @@ export async function updateCommonCategory(_previousState: { success: boolean },
   revalidatePath("/admin/categories");
   return { success: true };
 }
+
+export type DeleteCommonCategoryState = { success: boolean; error: "in-use" | "failed" | null };
+
+export async function deleteCommonCategory(_previousState: DeleteCommonCategoryState, formData: FormData): Promise<DeleteCommonCategoryState> {
+  const categoryId = Number(String(formData.get("categoryId") ?? "").trim());
+  if (!Number.isSafeInteger(categoryId) || categoryId <= 0) return { success: false, error: "failed" };
+
+  const { supabase, tokenHash } = await requireAdmin();
+  const { error } = await supabase.rpc("admin_delete_category", {
+    session_token_hash: tokenHash,
+    category_id: categoryId,
+  });
+  if (error) return { success: false, error: error.code === "23503" || error.message.includes("category_in_use") ? "in-use" : "failed" };
+
+  revalidatePath("/admin/categories");
+  revalidatePath("/categories");
+  revalidatePath("/");
+  return { success: true, error: null };
+}

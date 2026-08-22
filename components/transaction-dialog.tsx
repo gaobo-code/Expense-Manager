@@ -1,8 +1,8 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState, useTransition, type ReactNode } from "react";
-import { CalendarDays, ChevronLeft, ChevronRight, Eye, Pencil, Plus, X } from "lucide-react";
-import { createQuickCategory, createQuickCustomer, createTransaction, updateTransaction } from "@/app/actions";
+import { CalendarDays, ChevronLeft, ChevronRight, CircleAlert, Pencil, Plus, Trash2, X } from "lucide-react";
+import { createQuickCategory, createQuickCustomer, createTransaction, deleteTransaction, updateTransaction, type DeleteTransactionState } from "@/app/actions";
 import { useLanguage } from "@/components/language-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,7 +44,7 @@ export function TransactionDialog({ transaction, categories, customers, trigger 
   const show = () => { setCategoryId(String(transaction?.category_id ?? "")); setCustomerId(String(transaction?.customer_id ?? "")); setOpen(true); };
 
   return <>
-    {trigger ? <Button type="button" onClick={show} className="h-11 rounded-xl bg-emerald-600 px-5 shadow-sm hover:bg-emerald-700">{trigger}</Button> : <Button type="button" variant="ghost" size="icon" onClick={show} className="size-8 rounded-lg text-slate-500 hover:bg-emerald-50 hover:text-emerald-700 md:size-9" aria-label={l.detail}><Eye className="md:hidden" size={15}/><Pencil className="hidden md:block" size={15}/></Button>}
+    {trigger ? <Button type="button" onClick={show} className="h-11 rounded-xl bg-emerald-600 px-5 shadow-sm hover:bg-emerald-700">{trigger}</Button> : <div className="flex items-center justify-center md:gap-1"><Button type="button" variant="ghost" size="icon" onClick={show} className="size-7 rounded-lg text-slate-500 hover:bg-emerald-50 hover:text-emerald-700 md:size-8 md:border md:border-slate-200 md:bg-white md:text-slate-600 md:shadow-sm md:hover:border-emerald-200" aria-label={l.edit} title={l.edit}><Pencil className="md:hidden" size={12}/><Pencil className="hidden md:block" size={14}/></Button>{transaction ? <TransactionDeleteButton transactionId={transaction.id}/> : null}</div>}
     {open ? <div className="fixed inset-0 z-50 flex items-end justify-center text-left font-sans text-slate-950 sm:items-center sm:p-6"><button type="button" aria-label={l.close} onClick={() => setOpen(false)} className="absolute inset-0 bg-slate-950/45 backdrop-blur-[2px]"/><div role="dialog" aria-modal="true" aria-labelledby="transaction-title" className="relative max-h-[92vh] w-full overflow-y-auto rounded-t-3xl bg-white p-5 shadow-2xl sm:max-w-2xl sm:rounded-2xl sm:p-7">
       <div className="mb-6 flex items-start justify-between gap-4"><div><h2 id="transaction-title" className="text-xl font-bold">{editing ? l.edit : l.add}</h2><p className="mt-1 text-sm text-slate-500">{l.hint}</p></div><button type="button" aria-label={l.close} onClick={() => setOpen(false)} className="grid size-9 shrink-0 place-items-center rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200"><X size={18}/></button></div>
       <form ref={formRef} action={formAction} className="space-y-5">
@@ -56,12 +56,41 @@ export function TransactionDialog({ transaction, categories, customers, trigger 
         <Field label={l.customer}><div className="flex gap-2"><select name="customerId" value={customerId} onChange={(event) => setCustomerId(event.target.value)} className={selectClass}><option value="">{l.noCustomer}</option>{localCustomers.map((customer) => <option key={customer.id} value={customer.id}>{customer.name}</option>)}</select><Button type="button" variant="outline" onClick={() => setQuickKind("customer")} className="h-11 shrink-0 rounded-xl px-3"><Plus size={16}/><span className="hidden sm:inline">{l.addCustomer}</span></Button></div></Field>
         <div className="flex gap-3 pt-2"><Button type="button" variant="outline" disabled={pending} onClick={() => setOpen(false)} className="h-11 flex-1 rounded-xl">{l.cancel}</Button><Button type="submit" disabled={pending} className="h-11 flex-[1.5] rounded-xl bg-emerald-600 hover:bg-emerald-700">{editing ? l.save : l.create}</Button></div>
       </form>
+      {transaction ? <div className="mt-3 md:hidden"><TransactionDeleteButton transactionId={transaction.id} mobile disabled={pending}/></div> : null}
     </div></div> : null}
     {quickKind ? <QuickCreateDialog kind={quickKind} labels={l} roots={localCategories.filter((item) => item.parent_id === null)} language={language} onClose={() => setQuickKind(null)} onCreated={(item) => {
       if (quickKind === "category") { setLocalCategories((items) => [...items, { id: item.id, parent_id: item.parentId ?? null, user_id: "local", name_zh: item.nameZh ?? "", name_en: item.nameEn ?? "", amount_effect: item.amountEffect ?? "decrease", sort_order: 0, created_at: "", updated_at: "" }]); setCategoryId(String(item.id)); }
       else { setLocalCustomers((items) => [...items, { id: item.id, user_id: "local", name: item.name, created_at: "", updated_at: "" }]); setCustomerId(String(item.id)); }
       setQuickKind(null);
     }}/> : null}
+  </>;
+}
+
+export function TransactionDeleteButton({ transactionId, mobile = false, disabled = false }: { transactionId: number; mobile?: boolean; disabled?: boolean }) {
+  const { language } = useLanguage();
+  const zh = language === "zh";
+  const labels = zh ? { delete: "删除交易", deleting: "正在删除…", title: "确定删除这笔交易？", confirm: "删除后无法恢复，请确认是否继续。", cancel: "取消", submit: "确认删除", failedTitle: "无法删除交易", failed: "交易删除失败，请稍后重试。", close: "关闭" } : { delete: "Delete transaction", deleting: "Deleting…", title: "Delete this transaction?", confirm: "This cannot be undone. Are you sure you want to continue?", cancel: "Cancel", submit: "Delete", failedTitle: "Unable to delete transaction", failed: "The transaction could not be deleted. Please try again.", close: "Close" };
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [state, action, pending] = useActionState(deleteTransaction, { success: false, error: null } satisfies DeleteTransactionState);
+  const wasPending = useRef(false);
+
+  useEffect(() => {
+    if (pending) { wasPending.current = true; return; }
+    if (!wasPending.current) return;
+    wasPending.current = false;
+    setConfirmOpen(false);
+    if (!state.success && state.error) {
+      setShowToast(true);
+      const timer = window.setTimeout(() => setShowToast(false), 4500);
+      return () => window.clearTimeout(timer);
+    }
+  }, [pending, state]);
+
+  return <>
+    {mobile ? <Button type="button" variant="outline" disabled={disabled || pending} onClick={() => { setShowToast(false); setConfirmOpen(true); }} className="h-11 w-full rounded-xl border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"><Trash2 size={16}/>{labels.delete}</Button> : <Button type="button" variant="ghost" size="icon" disabled={pending} onClick={() => { setShowToast(false); setConfirmOpen(true); }} className="hidden size-8 rounded-lg border border-slate-200 bg-white text-slate-400 shadow-sm hover:border-red-200 hover:bg-red-50 hover:text-red-600 disabled:opacity-40 md:inline-flex" aria-label={labels.delete} title={labels.delete}><Trash2 size={14}/></Button>}
+    {confirmOpen ? <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 sm:p-6"><button type="button" className="absolute inset-0 bg-slate-950/40" aria-label={labels.cancel} onClick={() => setConfirmOpen(false)}/><div role="alertdialog" aria-modal="true" aria-labelledby={`delete-transaction-${transactionId}`} className="relative w-full max-w-sm rounded-2xl bg-white p-6 text-left shadow-xl"><h2 id={`delete-transaction-${transactionId}`} className="text-lg font-bold text-slate-950">{labels.title}</h2><p className="mt-2 text-sm leading-6 text-slate-500">{labels.confirm}</p><form action={action} className="mt-6 flex justify-end gap-3"><input type="hidden" name="transactionId" value={transactionId}/><Button type="button" variant="ghost" disabled={pending} onClick={() => setConfirmOpen(false)} className="rounded-lg text-slate-600">{labels.cancel}</Button><Button type="submit" disabled={pending} className="rounded-lg bg-red-600 px-5 text-white hover:bg-red-700">{pending ? labels.deleting : labels.submit}</Button></form></div></div> : null}
+    {showToast && state.error ? <div role="alert" aria-live="assertive" className="fixed left-4 right-4 top-4 z-[80] mx-auto flex max-w-md items-start gap-3 rounded-2xl border border-red-200 bg-white p-4 text-red-700 shadow-xl shadow-slate-900/10 sm:left-1/2 sm:right-auto sm:top-6 sm:mx-0 sm:w-full sm:-translate-x-1/2"><span className="grid size-9 shrink-0 place-items-center rounded-xl bg-red-50"><CircleAlert size={19}/></span><div className="min-w-0 flex-1"><p className="font-semibold">{labels.failedTitle}</p><p className="mt-0.5 text-sm leading-5 text-slate-600">{labels.failed}</p></div><button type="button" aria-label={labels.close} onClick={() => setShowToast(false)} className="grid size-8 shrink-0 place-items-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700"><X size={16}/></button></div> : null}
   </>;
 }
 
