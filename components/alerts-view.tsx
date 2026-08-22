@@ -59,7 +59,7 @@ export function AlertsView({ notices, hasError }: { notices: Notice[]; hasError:
                     onClick={() => setSelectedNotice(notice)}
                     className="group flex w-full overflow-hidden rounded-lg border border-slate-200 bg-white text-left shadow-sm transition-colors duration-200 hover:border-emerald-300 hover:bg-emerald-50/60 active:bg-emerald-100/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
                   >
-                    <div className="relative aspect-square w-32 shrink-0 self-start overflow-hidden bg-slate-100 sm:w-44">
+                    <div className="relative aspect-square w-32 shrink-0 self-center overflow-hidden bg-slate-100 sm:w-44">
                       {notice.thumbnail_data ? (
                         <Image src={`data:${notice.thumbnail_mime};base64,${notice.thumbnail_data}`} alt="" fill unoptimized className="object-cover" />
                       ) : (
