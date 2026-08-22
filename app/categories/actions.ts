@@ -89,3 +89,44 @@ export async function updateUserCategory(_previousState: { success: boolean }, f
   revalidatePath("/");
   return { success: true };
 }
+
+export type DeleteCategoryState = { success: boolean; error: "in-use" | "failed" | null };
+
+export async function deleteUserCategory(_previousState: DeleteCategoryState, formData: FormData): Promise<DeleteCategoryState> {
+  const categoryId = Number(String(formData.get("categoryId") ?? "").trim());
+  if (!Number.isSafeInteger(categoryId) || categoryId <= 0) return { success: false, error: "failed" };
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/auth/login?next=/categories");
+
+  const { data: category, error: categoryError } = await supabase
+    .from("categories")
+    .select("id")
+    .eq("id", categoryId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (categoryError || !category) return { success: false, error: "failed" };
+
+  const { data: transaction, error: transactionError } = await supabase
+    .from("transactions")
+    .select("id")
+    .eq("category_id", categoryId)
+    .limit(1)
+    .maybeSingle();
+  if (transactionError) return { success: false, error: "failed" };
+  if (transaction) return { success: false, error: "in-use" };
+
+  const { data: deletedCategory, error: deleteError } = await supabase
+    .from("categories")
+    .delete()
+    .eq("id", categoryId)
+    .eq("user_id", user.id)
+    .select("id")
+    .maybeSingle();
+  if (deleteError || !deletedCategory) return { success: false, error: deleteError?.code === "23503" ? "in-use" : "failed" };
+
+  revalidatePath("/categories");
+  revalidatePath("/");
+  return { success: true, error: null };
+}

@@ -3,7 +3,7 @@
 import { Folder, FolderTree, LockKeyhole, Tag } from "lucide-react";
 import { useLanguage } from "@/components/language-provider";
 import { PageShell } from "@/components/page-shell";
-import { UserCategoryDialog } from "@/components/user-category-dialog";
+import { UserCategoryDeleteButton, UserCategoryDialog } from "@/components/user-category-dialog";
 import { getCategoryName, type Category } from "@/lib/categories";
 
 export function CategoriesView({ categories, hasError, errorCode }: { categories: Category[]; hasError: boolean; errorCode?: string }) {
@@ -21,7 +21,7 @@ export function CategoriesView({ categories, hasError, errorCode }: { categories
       <UserCategoryDialog roots={roots} />
     </div>
 
-    {hasError || errorCode ? <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">{hasError ? t("categoriesUnavailable") : t("categoryOperationFailed")}</div> : null}
+    {hasError || errorCode ? <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">{hasError ? t("categoriesUnavailable") : errorCode === "category-in-use" ? t("categoryInUse") : errorCode === "delete" ? t("categoryDeleteFailed") : t("categoryOperationFailed")}</div> : null}
 
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
       <header className="flex items-center justify-between gap-4 border-b border-slate-200 bg-slate-50 px-4 py-4 sm:px-6">
@@ -38,7 +38,7 @@ export function CategoriesView({ categories, hasError, errorCode }: { categories
           <div className={`flex min-h-16 items-center gap-3 border-l-4 px-4 py-3 sm:px-6 ${editable ? "border-violet-500 bg-violet-50/50" : "border-emerald-500 bg-emerald-50/50"}`}>
             <span className={`grid size-9 shrink-0 place-items-center rounded-lg ${editable ? "bg-violet-100 text-violet-700" : "bg-emerald-100 text-emerald-700"}`}><Folder size={18} /></span>
             <div className="min-w-0 flex-1"><h3 className="truncate font-bold text-slate-900">{getCategoryName(root, language)}</h3><p className="mt-0.5 text-xs text-slate-500">{t("subcategoryCount", { count: String(items.length) })}</p></div>
-            {editable ? <UserCategoryDialog category={root} /> : <LockKeyhole className="mr-2 text-slate-300" size={16} />}
+            {editable ? <div className="flex items-center sm:gap-2"><UserCategoryDialog category={root} /><UserCategoryDeleteButton categoryId={root.id} /></div> : <LockKeyhole className="mr-2 text-slate-300" size={16} />}
           </div>
           {items.length ? <div className="relative ml-[2.375rem] py-1 pr-4 before:absolute before:bottom-8 before:left-0 before:top-0 before:w-px before:bg-slate-300 sm:mr-2 sm:pr-6">{items.map((item) => {
             const childEditable = item.user_id !== null;
@@ -48,7 +48,7 @@ export function CategoriesView({ categories, hasError, errorCode }: { categories
               <div className={`flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-xl border px-3 py-2 transition-colors ${childEditable ? "border-violet-100 bg-violet-50/70 hover:border-violet-200" : "border-slate-200 bg-slate-50 hover:border-emerald-200"}`}>
                 <span className={`grid size-7 shrink-0 place-items-center rounded-lg ${childEditable ? "bg-violet-100 text-violet-600" : "bg-slate-200 text-slate-500"}`}><Tag size={13} /></span>
                 <span className="min-w-0 flex-1 truncate text-sm font-medium text-slate-700">{name}</span>
-                {childEditable ? <UserCategoryDialog category={item} compact /> : null}
+                {childEditable ? <div className="flex items-center sm:gap-2"><UserCategoryDialog category={item} compact /><UserCategoryDeleteButton categoryId={item.id} compact /></div> : null}
               </div>
             </div>;
           })}</div> : null}

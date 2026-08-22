@@ -1,8 +1,8 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
-import { Pencil, Plus, X } from "lucide-react";
-import { createUserCategory, updateUserCategory } from "@/app/categories/actions";
+import { CircleAlert, Pencil, Plus, Trash2, X } from "lucide-react";
+import { createUserCategory, deleteUserCategory, updateUserCategory, type DeleteCategoryState } from "@/app/categories/actions";
 import { useLanguage } from "@/components/language-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,11 +38,11 @@ export function UserCategoryDialog({ category, roots = [], compact = false }: { 
     if (!state.success) return;
     setOpen(false);
     if (!editing) formRef.current?.reset();
-  }, [editing, state]);
+  }, [editing, state.success]);
 
   return <>
     {editing ? (
-      <Button type="button" variant="ghost" size="icon" onClick={() => { setNameError(false); setOpen(true); }} className={`${compact ? "size-7 rounded-full" : "size-9 rounded-lg"} text-slate-500 hover:bg-emerald-50 hover:text-emerald-700`} aria-label={t("editCategory")}><Pencil size={compact ? 12 : 15} /></Button>
+      <Button type="button" variant="ghost" size="icon" onClick={() => { setNameError(false); setOpen(true); }} className={`${compact ? "size-7 rounded-full" : "size-9 rounded-lg"} text-slate-500 hover:bg-emerald-50 hover:text-emerald-700 sm:size-9 sm:rounded-xl sm:border sm:border-slate-200 sm:bg-white sm:text-slate-600 sm:shadow-sm sm:hover:border-emerald-200 sm:hover:bg-emerald-50 sm:hover:text-emerald-700`} aria-label={t("editCategory")} title={t("editCategory")}><Pencil size={compact ? 12 : 15} /></Button>
     ) : (
       <Button type="button" onClick={() => { setNameError(false); setParentId(""); setAmountEffect(""); setOpen(true); }} className="h-11 rounded-xl bg-emerald-600 px-5 shadow-sm hover:bg-emerald-700"><Plus size={18} />{t("addCategory")}</Button>
     )}
@@ -76,7 +76,62 @@ export function UserCategoryDialog({ category, roots = [], compact = false }: { 
           {!editing ? <><div className="space-y-2"><Label htmlFor="user-parent-id">{t("parentCategory")}</Label><select id="user-parent-id" name="parentId" value={parentId} onChange={(event) => setParentId(event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-emerald-500/30"><option value="">{t("createRootCategory")}</option>{roots.map((root) => <option key={root.id} value={root.id}>{getCategoryName(root, language)}</option>)}</select><p className="text-xs text-slate-500">{t("parentCategoryDescription")}</p></div><div className="space-y-2"><Label>{t("amountEffect")}</Label><div className="grid grid-cols-2 gap-3"><label className="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 p-3 text-sm"><input type="radio" name="amountEffect" value="increase" required checked={amountEffect === "increase"} onChange={() => setAmountEffect("increase")} />{t("amountIncrease")}</label><label className="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 p-3 text-sm"><input type="radio" name="amountEffect" value="decrease" required checked={amountEffect === "decrease"} onChange={() => setAmountEffect("decrease")} />{t("amountDecrease")}</label></div><p className="text-xs text-slate-500">{parentId ? (language === "zh" ? "已默认带入一级类别的选择，可以修改。" : "Defaults to the top-level category's choice and can be changed.") : t("amountEffectDescription")}</p></div></> : null}
           <div className="flex gap-3 pt-1"><Button type="button" variant="outline" disabled={pending} onClick={() => setOpen(false)} className="h-11 flex-1 rounded-xl">{t("cancel")}</Button><Button type="submit" disabled={pending} className="h-11 flex-[1.5] rounded-xl bg-emerald-600 hover:bg-emerald-700">{editing ? t("saveChanges") : t("confirmAdd")}</Button></div>
         </form>
+        {category ? <div className="mt-3 sm:hidden"><UserCategoryDeleteButton categoryId={category.id} mobile disabled={pending} /></div> : null}
       </div>
+    </div> : null}
+  </>;
+}
+
+export function UserCategoryDeleteButton({ categoryId, compact = false, mobile = false, disabled = false }: { categoryId: number; compact?: boolean; mobile?: boolean; disabled?: boolean }) {
+  const { t } = useLanguage();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [showDeleteToast, setShowDeleteToast] = useState(false);
+  const [deleteState, deleteAction, deletePending] = useActionState(deleteUserCategory, { success: false, error: null } satisfies DeleteCategoryState);
+  const wasDeletePending = useRef(false);
+
+  useEffect(() => {
+    if (deletePending) {
+      wasDeletePending.current = true;
+      return;
+    }
+    if (!wasDeletePending.current) return;
+    wasDeletePending.current = false;
+    if (deleteState.success) {
+      setConfirmOpen(false);
+      return;
+    }
+    if (!deleteState.error) return;
+    setConfirmOpen(false);
+    setShowDeleteToast(true);
+    const timer = window.setTimeout(() => setShowDeleteToast(false), 4500);
+    return () => window.clearTimeout(timer);
+  }, [deletePending, deleteState]);
+
+  function openDeleteConfirmation() {
+    setShowDeleteToast(false);
+    setConfirmOpen(true);
+  }
+
+  return <>
+    {mobile ? <Button type="button" variant="outline" disabled={disabled || deletePending} onClick={openDeleteConfirmation} className="h-11 w-full rounded-xl border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"><Trash2 size={16} />{t("deleteCategory")}</Button> : <Button type="button" variant="ghost" size="icon" disabled={deletePending} onClick={openDeleteConfirmation} className="hidden size-9 rounded-xl border border-slate-200 bg-white text-slate-400 shadow-sm hover:border-red-200 hover:bg-red-50 hover:text-red-600 disabled:opacity-40 sm:inline-flex" aria-label={t("deleteCategory")} title={t("deleteCategory")}><Trash2 size={compact ? 12 : 15} /></Button>}
+
+    {confirmOpen ? <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 sm:p-6">
+      <button type="button" className="absolute inset-0 bg-slate-950/40" aria-label={t("cancel")} onClick={() => setConfirmOpen(false)} />
+      <div role="alertdialog" aria-modal="true" aria-labelledby={`delete-category-title-${categoryId}`} className="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+        <h2 id={`delete-category-title-${categoryId}`} className="text-lg font-bold text-slate-950">{t("deleteCategoryTitle")}</h2>
+        <p className="mt-2 text-sm leading-6 text-slate-500">{t("deleteCategoryConfirm")}</p>
+        <form action={deleteAction} className="mt-6 flex justify-end gap-3">
+          <input type="hidden" name="categoryId" value={categoryId} />
+          <Button type="button" variant="ghost" disabled={deletePending} onClick={() => setConfirmOpen(false)} className="rounded-lg text-slate-600">{t("cancel")}</Button>
+          <Button type="submit" disabled={deletePending} className="rounded-lg bg-red-600 px-5 text-white hover:bg-red-700">{deletePending ? t("deletingCategory") : t("confirmDeleteCategory")}</Button>
+        </form>
+      </div>
+    </div> : null}
+
+    {showDeleteToast && deleteState.error ? <div role="alert" aria-live="assertive" className="fixed left-4 right-4 top-4 z-[80] mx-auto flex max-w-md items-start gap-3 rounded-2xl border border-red-200 bg-white p-4 text-red-700 shadow-xl shadow-slate-900/10 sm:left-1/2 sm:right-auto sm:top-6 sm:mx-0 sm:w-full sm:-translate-x-1/2">
+      <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-red-50"><CircleAlert size={19} /></span>
+      <div className="min-w-0 flex-1"><p className="font-semibold">{t("categoryDeleteFailedTitle")}</p><p className="mt-0.5 text-sm leading-5 text-slate-600">{deleteState.error === "in-use" ? t("categoryInUse") : t("categoryDeleteFailed")}</p></div>
+      <button type="button" aria-label={t("close")} onClick={() => setShowDeleteToast(false)} className="grid size-8 shrink-0 place-items-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700"><X size={16} /></button>
     </div> : null}
   </>;
 }
