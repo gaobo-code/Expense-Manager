@@ -40,6 +40,7 @@ export function LoginForm({
     submit: "登录",
     noAccount: "还没有账户？",
     signUp: "免费注册",
+    invalidCredentials: "邮箱或密码错误",
     fallbackError: "登录时出现错误，请稍后重试",
   } : {
     eyebrow: "Welcome back",
@@ -54,6 +55,7 @@ export function LoginForm({
     submit: "Sign in",
     noAccount: "New to Money Manager?",
     signUp: "Create an account",
+    invalidCredentials: "Invalid login credentials",
     fallbackError: "Something went wrong. Please try again.",
   };
   const handleLogin = async (e: React.FormEvent) => {
@@ -81,7 +83,14 @@ export function LoginForm({
       // included before Proxy checks the destination request.
       window.location.assign(destination);
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : text.fallbackError);
+      const authError = error as { code?: string; message?: string };
+      const hasInvalidCredentials =
+        authError.code === "invalid_credentials" ||
+        authError.message === "Invalid login credentials";
+
+      setError(
+        hasInvalidCredentials ? text.invalidCredentials : text.fallbackError,
+      );
     } finally {
       setIsLoading(false);
     }

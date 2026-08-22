@@ -27,9 +27,9 @@ export function ForgotPasswordForm({
   const [isLoading, setIsLoading] = useState(false);
   const { language } = useLanguage();
   const text = language === "zh" ? {
-    eyebrow: "找回账户", title: "重置你的密码", description: "输入注册邮箱，我们会向你发送一封安全的密码重置邮件。", email: "邮箱", placeholder: "请输入注册邮箱", loading: "正在发送…", submit: "发送重置邮件", remember: "想起密码了？", login: "返回登录", sent: "邮件已发送", check: "请检查你的邮箱", sentDescription: "如果该邮箱已注册，你将很快收到密码重置链接。", hint: "没有看到邮件？请检查垃圾邮件文件夹，或稍后重新发送。", resend: "重新发送", fallback: "发送失败，请稍后重试。",
+    eyebrow: "找回账户", title: "重置你的密码", description: "输入注册邮箱，我们会向你发送一封安全的密码重置邮件。", email: "邮箱", placeholder: "请输入注册邮箱", loading: "正在发送…", submit: "发送重置邮件", remember: "想起密码了？", login: "返回登录", sent: "邮件已发送", check: "请检查你的邮箱", sentDescription: "如果该邮箱已注册，你将很快收到密码重置链接。", hint: "没有看到邮件？请检查垃圾邮件文件夹，或稍后重新发送。", resend: "重新发送", rateLimit: "邮件发送过于频繁，请稍后再试。", fallback: "发送失败，请稍后重试。",
   } : {
-    eyebrow: "Account recovery", title: "Reset your password", description: "Enter your account email and we’ll send you a secure password reset link.", email: "Email", placeholder: "Enter your account email", loading: "Sending…", submit: "Send reset email", remember: "Remember your password?", login: "Back to sign in", sent: "Email sent", check: "Check your inbox", sentDescription: "If this email is registered, a password reset link will arrive shortly.", hint: "Can’t find it? Check your spam folder or try sending it again in a moment.", resend: "Send again", fallback: "We couldn’t send the email. Please try again.",
+    eyebrow: "Account recovery", title: "Reset your password", description: "Enter your account email and we’ll send you a secure password reset link.", email: "Email", placeholder: "Enter your account email", loading: "Sending…", submit: "Send reset email", remember: "Remember your password?", login: "Back to sign in", sent: "Email sent", check: "Check your inbox", sentDescription: "If this email is registered, a password reset link will arrive shortly.", hint: "Can’t find it? Check your spam folder or try sending it again in a moment.", resend: "Send again", rateLimit: "Email rate limit exceeded. Please try again later.", fallback: "We couldn’t send the email. Please try again.",
   };
 
   const handleForgotPassword = async (e: React.FormEvent) => {
@@ -49,7 +49,12 @@ export function ForgotPasswordForm({
       if (error) throw error;
       setSuccess(true);
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : text.fallback);
+      const authError = error as { code?: string; message?: string };
+      const hasEmailRateLimit =
+        authError.code === "over_email_send_rate_limit" ||
+        authError.message?.toLowerCase() === "email rate limit exceeded";
+
+      setError(hasEmailRateLimit ? text.rateLimit : text.fallback);
     } finally {
       setIsLoading(false);
     }

@@ -3,7 +3,7 @@ import { AuthShell } from "@/components/auth-shell";
 
 export default function Page() {
   return (
-    <AuthShell>
+    <AuthShell initialMobileScreen="form" mobileBackHref="/auth/login">
       <SignUpForm />
     </AuthShell>
   );
